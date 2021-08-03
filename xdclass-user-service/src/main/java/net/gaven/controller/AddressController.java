@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.models.auth.In;
 import net.gaven.model.AddressDO;
 import net.gaven.service.IAddressService;
+import net.gaven.util.JsonData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,10 +32,10 @@ public class AddressController {
 
     @ApiOperation("根据id查询详情")
     @GetMapping("/find/{address_id}")
-    public AddressDO getAddressById(@ApiParam(value = "地址Id", required = true)
-                                    @PathVariable("address_id") Integer addressId) {
-        AddressDO addressById = addressService.getAddressById(addressId);
-        return addressById;
+    public JsonData getAddressById(@ApiParam(value = "地址Id", required = true)
+                                   @PathVariable("address_id") Integer addressId) {
+        AddressDO addressDO = addressService.getAddressById(addressId);
+        return JsonData.buildSuccess(addressDO);
     }
 
 }
