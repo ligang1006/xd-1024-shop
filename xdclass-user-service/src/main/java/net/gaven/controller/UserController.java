@@ -1,4 +1,4 @@
-package net.xdclass.controller;
+package net.gaven.controller;
 
 
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,7 +1,8 @@
 package net.gaven.mapper;
 
-import net.xdclass.model.AddressDO;
+
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import net.gaven.model.AddressDO;
 
 /**
  * <p>

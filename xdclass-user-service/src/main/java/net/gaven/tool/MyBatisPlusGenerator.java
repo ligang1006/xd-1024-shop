@@ -76,7 +76,7 @@ public class MyBatisPlusGenerator {
 
         //4. 包名策略配置
         PackageConfig pkConfig = new PackageConfig();
-        pkConfig.setParent("net.xdclass")
+        pkConfig.setParent("net.gaven")
                 .setMapper("mapper")
                 .setService("service")
                 .setController("controller")

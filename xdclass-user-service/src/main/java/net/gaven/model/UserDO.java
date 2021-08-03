@@ -1,4 +1,4 @@
-package net.xdclass.model;
+package net.gaven.model;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;

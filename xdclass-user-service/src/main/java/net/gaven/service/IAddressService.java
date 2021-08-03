@@ -1,7 +1,6 @@
-package net.xdclass.service;
+package net.gaven.service;
 
-import net.xdclass.model.AddressDO;
-import com.baomidou.mybatisplus.extension.service.IService;
+import net.gaven.model.AddressDO;
 
 /**
  * <p>
@@ -11,6 +10,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @author 二当家小D
  * @since 2021-08-03
  */
-public interface IAddressService extends IService<AddressDO> {
+public interface IAddressService {
+    /**
+     * 根据Id查询详情
+     *
+     * @param id
+     * @return
+     */
+    AddressDO getAddressById(Integer id);
 
 }

@@ -2,6 +2,7 @@ package net.gaven.mapper;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import net.gaven.model.UserDO;
 
 /**
  * <p>
@@ -11,6 +12,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author 二当家小D
  * @since 2021-08-03
  */
-public interface UserMapper extends BaseMapper<net.xdclass.model.UserDO> {
+public interface UserMapper extends BaseMapper<UserDO> {
 
 }

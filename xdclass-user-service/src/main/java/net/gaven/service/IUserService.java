@@ -1,7 +1,8 @@
 package net.gaven.service;
 
-import net.xdclass.model.UserDO;
+
 import com.baomidou.mybatisplus.extension.service.IService;
+import net.gaven.model.UserDO;
 
 /**
  * <p>
