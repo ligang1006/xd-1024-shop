@@ -37,6 +37,7 @@
         <velocity.engine.version>2.0</velocity.engine.version>
         <!--跳过单元测试-->
         <skipTests>true</skipTests>
+        <kaptcha.version>1.1.0</kaptcha.version>
     </properties>
 
     <!--锁定版本-->
@@ -120,6 +121,13 @@
                 <version>${velocity.engine.version}</version>
             </dependency>
             <!-- 代码自动生成依赖 end-->
+
+            <!--图形验证码kaptcha依赖包-->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>kaptcha-spring-boot-starter</artifactId>
+                <version>${kaptcha.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
