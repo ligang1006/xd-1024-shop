@@ -5,6 +5,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.models.auth.In;
+import net.gaven.enums.BizCodeEnum;
+import net.gaven.exception.CustomException;
 import net.gaven.model.AddressDO;
 import net.gaven.service.IAddressService;
 import net.gaven.util.JsonData;
@@ -31,10 +33,18 @@ public class AddressController {
     private IAddressService addressService;
 
     @ApiOperation("根据id查询详情")
+    //http://localhost:9001/api/v1/address/find/1
     @GetMapping("/find/{address_id}")
     public JsonData getAddressById(@ApiParam(value = "地址Id", required = true)
                                    @PathVariable("address_id") Integer addressId) {
         AddressDO addressDO = addressService.getAddressById(addressId);
+        if (addressDO.getId() == 1) {
+            throw new CustomException(BizCodeEnum.OPS_REPEAT.getCode(), "数据重复");
+
+        } else {
+            int i = 10 / 0;
+
+        }
         return JsonData.buildSuccess(addressDO);
     }
 
