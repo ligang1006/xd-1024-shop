@@ -42,6 +42,14 @@ public class MyRedisTemplate {
     }
 
     /**
+     * @param key
+     * @return
+     */
+    public String getValue(String key) {
+        return (String) redisTemplate.opsForValue().get(key);
+    }
+
+    /**
      * 删除对应的值
      *
      * @param key
