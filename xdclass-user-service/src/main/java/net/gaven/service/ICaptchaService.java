@@ -13,5 +13,5 @@ public interface ICaptchaService {
      *
      * @param outputStream
      */
-    public void createCaptcha(ServletOutputStream outputStream);
+    public void createCaptcha(ServletOutputStream outputStream,String cacheKey);
 }
