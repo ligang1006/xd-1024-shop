@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
  **/
 @Slf4j
 @Service
-public class MailService implements IMailService {
+public class MailServiceImpl implements IMailService {
     @Autowired
     private JavaMailSender mailSender;
     @Value("${spring.mail.from}")

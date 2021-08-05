@@ -31,5 +31,24 @@ public class MyRedisTemplate {
 
     }
 
+    /**
+     * 获取对应的Value
+     *
+     * @param key
+     * @return
+     */
+    public Object get(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
+
+    /**
+     * 删除对应的值
+     *
+     * @param key
+     */
+    public Boolean delete(String key) {
+        return redisTemplate.delete(key);
+    }
+
 
 }

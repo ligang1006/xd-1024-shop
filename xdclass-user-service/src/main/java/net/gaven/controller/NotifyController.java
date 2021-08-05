@@ -11,6 +11,7 @@ import net.gaven.util.MD5Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.imageio.ImageIO;
@@ -19,6 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+
+import static net.gaven.constant.Constant.REDIS_USER_SERVICE_PREFIX;
 
 /**
  * @author: lee
@@ -57,12 +60,14 @@ public class NotifyController {
         response.addHeader("Cache-Control", "create_date-check=0, pre-check=0");
         response.setHeader("Pragma", "no-cache");
         String ipAddr = HttpUtil.getIpAddr(request);
-        captchaService.createCaptcha(response.getOutputStream(), "user-service:captcha" + MD5Util.MD5(ipAddr + request.getHeader("User-Agent")));
+        captchaService.createCaptcha(response.getOutputStream(), REDIS_USER_SERVICE_PREFIX + MD5Util.MD5(ipAddr + request.getHeader("User-Agent")));
 
 
     }
 
 
+
+    @ApiOperation("发送邮箱")
     @GetMapping("/send_email")
     public JsonData sentEmail(String to, String subject, String content) {
         mailService.sendMsg(to, subject, content);

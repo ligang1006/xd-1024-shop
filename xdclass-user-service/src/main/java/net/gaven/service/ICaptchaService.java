@@ -1,5 +1,7 @@
 package net.gaven.service;
 
+import net.gaven.util.JsonData;
+
 import javax.servlet.ServletOutputStream;
 
 /**
@@ -10,8 +12,20 @@ import javax.servlet.ServletOutputStream;
  **/
 public interface ICaptchaService {
     /**
+     * 创建验证码
      *
      * @param outputStream
+     * @param cacheKey     缓存Key
      */
-    public void createCaptcha(ServletOutputStream outputStream,String cacheKey);
+    void createCaptcha(ServletOutputStream outputStream, String cacheKey);
+
+    /**
+     * 校验图形验证码
+     * 通过req获取key，与之前redis缓存的key进行比较
+     *
+     * @param captcha
+     * @param cacheKey
+     * @return
+     */
+    JsonData checkCaptcha(String captcha, String cacheKey, String to);
 }
