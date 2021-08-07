@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter;
  **/
 @Slf4j
 @Service
-public class FileService implements IFileService {
+public class FileServiceImpl implements IFileService {
     @Autowired
     private OSSClientConfiguration ossClientConfiguration;
 

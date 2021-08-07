@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
  * @create: 2021/8/3 3:31 下午
  **/
 @Service
-public class AddressService implements IAddressService {
+public class AddressServiceImpl implements IAddressService {
     @Autowired
     private AddressMapper addressMapper;
 

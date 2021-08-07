@@ -3,18 +3,20 @@ package net.gaven.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.request.UserRegisterRequest;
 import net.gaven.service.ICaptchaService;
+import net.gaven.service.IFileService;
 import net.gaven.service.IMailService;
+import net.gaven.service.IUserService;
 import net.gaven.util.HttpUtil;
 import net.gaven.util.JsonData;
 import net.gaven.util.MD5Util;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,6 +37,10 @@ public class UserController {
 
     @Autowired
     private ICaptchaService captchaService;
+    @Autowired
+    private IFileService fileService;
+    @Autowired
+    private IUserService userService;
 
     /**
      * 与redis中缓存的Key进行对比，相同就成功
@@ -55,5 +61,32 @@ public class UserController {
         return captchaService.checkCaptcha(captcha, cacheKey, to);
 
     }
+
+    /**
+     * 头像上传
+     * 最大1M
+     *
+     * @param file
+     * @return
+     */
+    @ApiOperation("上传头像")
+    @PostMapping("/image_upload")
+    public JsonData uploadUserImage(
+            @ApiParam(value = "file", required = true)
+            @RequestPart("file") MultipartFile file) {
+        String userImageUrl = fileService.uploadUserImage(file);
+        return StringUtils.isNotEmpty(userImageUrl) ? JsonData.buildSuccess(userImageUrl) : JsonData.buildResult(BizCodeEnum.FILE_UPLOAD_USER_IMAGE_FAIL);
+    }
+
+    @ApiOperation("用户注册")
+    @PostMapping("register")
+    public JsonData registerUser(
+            @ApiParam("用户注册参数")
+            @RequestBody UserRegisterRequest registerRequest) {
+        JsonData jsonData = userService.registerUser(registerRequest);
+        return jsonData;
+    }
+
+
 }
 

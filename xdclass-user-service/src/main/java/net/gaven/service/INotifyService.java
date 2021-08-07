@@ -16,4 +16,15 @@ public interface INotifyService {
      * @return
      */
     JsonData sendCode(SendCodeEnum sendCodeEnum, String to);
+
+    /**
+     * 校验验证码
+     *
+     * @param sendCodeEnum
+     * @param to
+     * @param code
+     * @return
+     */
+    boolean checkCode(SendCodeEnum sendCodeEnum, String to, String code);
+
 }

@@ -5,5 +5,8 @@ package net.gaven.enums;
  * @create: 2021/8/5 12:41 下午
  **/
 public enum SendCodeEnum {
-     USER_REGISTER;
+    /**
+     * 用户注册
+     */
+    USER_REGISTER;
 }

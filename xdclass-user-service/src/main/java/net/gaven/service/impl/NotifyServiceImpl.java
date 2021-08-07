@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
+import static net.gaven.constant.CacheKey.CHECK_CODE_KEY;
 import static net.gaven.constant.Constant.E_MAIL_CONTENT;
 import static net.gaven.constant.Constant.E_MAIL_SUBJECT;
 
@@ -49,7 +50,7 @@ public class NotifyServiceImpl implements INotifyService {
     @Override
     public JsonData sendCode(SendCodeEnum sendCodeEnum, String to) {
         //这里通过时间戳的方法，进行实现
-        String cacheKey = String.format(CacheKey.CHECK_CODE_KEY, sendCodeEnum.name(), to);
+        String cacheKey = String.format(CHECK_CODE_KEY, sendCodeEnum.name(), to);
         //校验是否发送过验证码   xx_时间戳
         String cacheValue = redisTemplate.getValue(cacheKey);
         //之前发送过,校验时间60s内不能发送
@@ -61,6 +62,7 @@ public class NotifyServiceImpl implements INotifyService {
             }
         }
         String randomNum = RandomNumUtil.getRandomNum(6);
+        //777777_20210807
         String value = randomNum + "_" + System.currentTimeMillis();
         //保存key
         redisTemplate.set(cacheKey, value, 60, TimeUnit.SECONDS);
@@ -74,5 +76,32 @@ public class NotifyServiceImpl implements INotifyService {
 
         }
         return JsonData.buildResult(BizCodeEnum.CODE_TO_ERROR);
+    }
+
+    /**
+     * 校验验证码
+     * 到redis中校验该code是否正确
+     *
+     * @param sendCodeEnum
+     * @param to
+     * @param code
+     * @return
+     */
+    @Override
+    public boolean checkCode(SendCodeEnum sendCodeEnum, String to, String code) {
+        if (StringUtils.isEmpty(code) || StringUtils.isEmpty(to)) {
+            return false;
+        }
+        // CHECK_CODE_KEY+ SendCodeEnum.name+to
+        String cacheKey = String.format(CHECK_CODE_KEY, sendCodeEnum.name(), to);
+        //上面的存储方法，value的格式777777_20210807
+        String value = (String) redisTemplate.get(cacheKey);
+        if (StringUtils.isNotEmpty(value)) {
+            String cacheValue = value.split("_")[0];
+            if (cacheValue.equals(code)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
