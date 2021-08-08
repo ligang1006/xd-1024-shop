@@ -1,5 +1,6 @@
 package net.gaven.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
@@ -14,8 +15,11 @@ import net.gaven.util.RandomUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author: lee
@@ -46,17 +50,38 @@ public class UserServiceImpl implements IUserService {
         if (userRegisterRequest == null) {
             return JsonData.buildError("userRegisterRequest is not allow null");
         }
-        boolean checkResult = false;
+
         boolean checkCode = notifyService.checkCode(SendCodeEnum.USER_REGISTER,
                 userRegisterRequest.getMail(), userRegisterRequest.getCode());
         if (!checkCode) {
             return JsonData.buildResult(BizCodeEnum.CODE_ERROR);
         }
         //账号唯一性检查(TODO)
+        boolean checkUnion = checkUnion(userRegisterRequest.getMail());
+        if (checkUnion) {
+            saveUserDO(userRegisterRequest);
+            //新注册用户福利发放(TODO)
+            return JsonData.buildSuccess();
+        } else {
+            return JsonData.buildResult(BizCodeEnum.ACCOUNT_REPEAT);
+        }
 
-        saveUserDO(userRegisterRequest);
-        //新注册用户福利发放(TODO)
-        return JsonData.buildSuccess();
+    }
+
+    /**
+     * 校验用户是否唯一
+     *
+     * @param mail
+     * @return
+     */
+    private boolean checkUnion(String mail) {
+        //高并发有问题
+        QueryWrapper<UserDO> queryWrapper = new QueryWrapper<UserDO>().eq("mail", mail);
+        List<UserDO> userDOList = userMapper.selectList(queryWrapper);
+        if (CollectionUtils.isEmpty(userDOList)) {
+            return true;
+        }
+        return false;
     }
 
     private void saveUserDO(UserRegisterRequest userRegisterRequest) {
