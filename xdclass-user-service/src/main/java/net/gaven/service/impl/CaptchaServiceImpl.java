@@ -63,6 +63,7 @@ public class CaptchaServiceImpl implements ICaptchaService {
     }
 
     /**
+     * 校验图形验证码
      * @param captcha
      * @param cacheKey
      * @return

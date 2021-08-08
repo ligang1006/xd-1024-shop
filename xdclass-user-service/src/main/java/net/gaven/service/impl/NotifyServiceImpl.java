@@ -1,7 +1,6 @@
 package net.gaven.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import net.gaven.constant.CacheKey;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
 import net.gaven.service.IMailService;
@@ -9,7 +8,7 @@ import net.gaven.service.INotifyService;
 import net.gaven.util.CheckUtil;
 import net.gaven.util.JsonData;
 import net.gaven.util.MyRedisTemplate;
-import net.gaven.util.RandomNumUtil;
+import net.gaven.util.RandomUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,11 +60,11 @@ public class NotifyServiceImpl implements INotifyService {
                 return JsonData.buildResult(BizCodeEnum.CODE_LIMITED);
             }
         }
-        String randomNum = RandomNumUtil.getRandomNum(6);
+        String randomNum = RandomUtil.getRandomNum(6);
         //777777_20210807
         String value = randomNum + "_" + System.currentTimeMillis();
         //保存key
-        redisTemplate.set(cacheKey, value, 60, TimeUnit.SECONDS);
+        redisTemplate.set(cacheKey, value, 300, TimeUnit.SECONDS);
         //发邮件
         if (CheckUtil.isEmail(to)) {
             //发送随机数作为验证码

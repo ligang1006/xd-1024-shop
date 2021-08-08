@@ -1,5 +1,8 @@
 package net.gaven.util;
 
+import org.apache.commons.codec.digest.Md5Crypt;
+import org.apache.commons.lang3.StringUtils;
+
 import java.security.MessageDigest;
 
 /**
@@ -20,6 +23,24 @@ public class MD5Util {
         } catch (Exception exception) {
         }
         return null;
+    }
 
+    /**
+     * 获取加盐的密码
+     *
+     * @param pwd
+     * @param salt
+     * @return
+     */
+    public static String getCryptPwd(String pwd, String salt) {
+        if (StringUtils.isEmpty(pwd)) {
+            return pwd;
+        }
+        //生成秘钥
+        if (StringUtils.isEmpty(salt)) {
+            salt = "$1$" + RandomUtil.getStringNumRandom(8);
+        }
+        //密码 + 加盐处理
+        return Md5Crypt.md5Crypt(pwd.getBytes(), salt);
     }
 }
