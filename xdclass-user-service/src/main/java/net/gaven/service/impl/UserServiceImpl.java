@@ -6,6 +6,7 @@ import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
 import net.gaven.mapper.UserMapper;
 import net.gaven.model.UserDO;
+import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
 import net.gaven.service.INotifyService;
 import net.gaven.service.IUserService;
@@ -86,15 +87,50 @@ public class UserServiceImpl implements IUserService {
 
     private void saveUserDO(UserRegisterRequest userRegisterRequest) {
         //密码加密（TODO）
-        String cryptPwd = MD5Util.getCryptPwd(userRegisterRequest.getPwd(), "$1$" + RandomUtil.getStringNumRandom(8));
+        String salt = "$1$" + RandomUtil.getStringNumRandom(8);
+        String cryptPwd = MD5Util.getCryptPwd(userRegisterRequest.getPwd(), salt);
         //账号唯一性检查(TODO)
         //入库
         UserDO userDO = new UserDO();
         BeanUtils.copyProperties(userRegisterRequest, userDO);
         userDO.setSlogan("ni hao 每一天");
         userDO.setCreateTime(new Date());
-        userDO.setSecret(cryptPwd);
+        userDO.setSecret(salt);
+        userDO.setPwd(cryptPwd);
         userDO.setHeadImg(userRegisterRequest.getHeadImg());
         userMapper.insert(userDO);
+    }
+
+    /**
+     * 1、拿到mail到数据库进行匹配,如果存储在
+     * 2、拿到对应到盐，通过pwd+盐 ==>校验与数据库到pwd是否相同
+     *
+     * @param loginRequest
+     * @return
+     */
+    @Override
+    public JsonData login(UserLoginRequest loginRequest) {
+        QueryWrapper<UserDO> queryWrapper = new QueryWrapper<UserDO>().eq("mail", loginRequest.getMail());
+        List<UserDO> userDOS = userMapper.selectList(queryWrapper);
+        if (userDOS != null && userDOS.size() == 1) {
+            /*注册过*/
+            //获取盐
+            String pwd = loginRequest.getPwd();
+            String salt = userDOS.get(0).getSecret();
+            String dbPwd = userDOS.get(0).getPwd();
+            //加盐获取加盐后的pwd
+            String cryptPwd = MD5Util.getCryptPwd(pwd, salt);
+            //与数据库的pwd进行比较
+            if (cryptPwd.equals(dbPwd)) {
+                //生成token TODO
+                return JsonData.buildSuccess("login success,have a good time!");
+            } else {
+                return JsonData.buildResult(BizCodeEnum.ACCOUNT_PWD_ERROR);
+            }
+        } else {
+            /*未注册过*/
+            return JsonData.buildResult(BizCodeEnum.ACCOUNT_UNREGISTER);
+        }
+
     }
 }

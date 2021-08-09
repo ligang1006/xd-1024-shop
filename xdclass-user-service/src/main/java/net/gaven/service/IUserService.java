@@ -3,6 +3,7 @@ package net.gaven.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import net.gaven.model.UserDO;
+import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
 import net.gaven.util.JsonData;
 
@@ -29,4 +30,11 @@ public interface IUserService {
      */
     JsonData registerUser(UserRegisterRequest userRegisterRequest);
 
+    /**
+     * 用户登录
+     *
+     * @param loginRequest
+     * @return
+     */
+    JsonData login(UserLoginRequest loginRequest);
 }

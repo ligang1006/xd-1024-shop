@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
 import net.gaven.service.ICaptchaService;
 import net.gaven.service.IFileService;
@@ -85,6 +86,21 @@ public class UserController {
             @RequestBody UserRegisterRequest registerRequest) {
         JsonData jsonData = userService.registerUser(registerRequest);
         return jsonData;
+    }
+
+    /**
+     * 用户登录接口
+     *
+     * @param loginRequest
+     * @return
+     */
+    @ApiOperation("用户登录接口")
+    @ResponseBody
+    public JsonData login(@ApiParam("登录对象")
+                          @RequestBody UserLoginRequest loginRequest) {
+        JsonData jsonData = userService.login(loginRequest);
+        return jsonData;
+
     }
 
 
