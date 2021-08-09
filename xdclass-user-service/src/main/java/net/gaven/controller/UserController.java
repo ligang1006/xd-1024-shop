@@ -95,7 +95,7 @@ public class UserController {
      * @return
      */
     @ApiOperation("用户登录接口")
-    @ResponseBody
+    @PostMapping("/login")
     public JsonData login(@ApiParam("登录对象")
                           @RequestBody UserLoginRequest loginRequest) {
         JsonData jsonData = userService.login(loginRequest);
