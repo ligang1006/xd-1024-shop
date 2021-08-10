@@ -40,6 +40,8 @@
         <!--图形验证码-->
         <kaptcha.version>1.1.0</kaptcha.version>
         <aliyun.soo.version>3.10.2</aliyun.soo.version>
+        <!--jwt生成-->
+        <jsonweb.token.version>0.7.0</jsonweb.token.version>
     </properties>
 
     <!--锁定版本-->
@@ -135,6 +137,14 @@
                 <artifactId>aliyun-sdk-oss</artifactId>
                 <version>${aliyun.soo.version}</version>
             </dependency>
+
+            <!-- JWT相关 -->
+            <dependency>
+                <groupId>io.jsonwebtoken</groupId>
+                <artifactId>jjwt</artifactId>
+                <version>${jsonweb.token.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

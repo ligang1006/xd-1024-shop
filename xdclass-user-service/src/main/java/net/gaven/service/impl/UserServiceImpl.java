@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
 import net.gaven.mapper.UserMapper;
+import net.gaven.model.LoginUser;
 import net.gaven.model.UserDO;
 import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
@@ -13,6 +14,7 @@ import net.gaven.service.IUserService;
 import net.gaven.util.JsonData;
 import net.gaven.util.MD5Util;
 import net.gaven.util.RandomUtil;
+import net.gaven.util.yonyou.JWTUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,6 +106,10 @@ public class UserServiceImpl implements IUserService {
     /**
      * 1、拿到mail到数据库进行匹配,如果存储在
      * 2、拿到对应到盐，通过pwd+盐 ==>校验与数据库到pwd是否相同
+     * <p>
+     *     token的刷新。前端存储token和expireTime和re
+     * <p>
+     * 加强校验 ip进行校验
      *
      * @param loginRequest
      * @return
@@ -120,10 +126,11 @@ public class UserServiceImpl implements IUserService {
             String dbPwd = userDOS.get(0).getPwd();
             //加盐获取加盐后的pwd
             String cryptPwd = MD5Util.getCryptPwd(pwd, salt);
-            //与数据库的pwd进行比较
+            //与数据库的pwd进行比较，增加更强的校验，传ip ip也进行校验
             if (cryptPwd.equals(dbPwd)) {
+                String token = generateJWT(userDOS);
                 //生成token TODO
-                return JsonData.buildSuccess("login success,have a good time!");
+                return JsonData.buildSuccess(token);
             } else {
                 return JsonData.buildResult(BizCodeEnum.ACCOUNT_PWD_ERROR);
             }
@@ -133,4 +140,13 @@ public class UserServiceImpl implements IUserService {
         }
 
     }
+
+    private String generateJWT(List<UserDO> userDOS) {
+        LoginUser loginUser = new LoginUser();
+        BeanUtils.copyProperties(userDOS, loginUser);
+        String token = JWTUtil.generateJsonWebToken(loginUser);
+        return token;
+    }
+
+
 }
