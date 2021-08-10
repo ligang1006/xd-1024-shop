@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletResponse;
  **/
 @Slf4j
 public class LoginInterceptor implements HandlerInterceptor {
+    public static ThreadLocal<LoginUser> threadLocal = new ThreadLocal<>();
+
     /**
      * 通过token校验用户是否登录
      * case1：token==null    false 并且打印
@@ -58,10 +60,12 @@ public class LoginInterceptor implements HandlerInterceptor {
                 loginUser.setHeadImg(headImg);
                 loginUser.setId(id);
                 loginUser.setMail(mail);
-                //传递loginUser TODO通过threadLocal获取
 
                 /*1、通过request传递
                  * 2、通过threadLocal获取   */
+
+                //传递loginUser 通过threadLocal获取
+                threadLocal.set(loginUser);
 //                request.setAttribute("loginUser",loginUser);
                 return true;
             } else {
