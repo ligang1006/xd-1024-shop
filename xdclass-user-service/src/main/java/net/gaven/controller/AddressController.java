@@ -4,7 +4,6 @@ package net.gaven.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.models.auth.In;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.exception.CustomException;
 import net.gaven.model.AddressDO;
@@ -14,6 +13,8 @@ import net.gaven.util.JsonData;
 import net.gaven.vo.AddressVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * <p>
@@ -85,6 +86,19 @@ public class AddressController {
                                   @PathVariable(value = "address_id") int addressId) {
         int rows = addressService.deleteAddress(addressId);
         return rows == 1 ? JsonData.buildSuccess("delete address success " + addressId) : JsonData.buildResult(BizCodeEnum.ADDRESS_DEL_FAIL);
+    }
+
+    /**
+     * 获取货地址列表
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("获取收货地址列表")
+    @GetMapping("/list")
+    public JsonData addressList() {
+        List<AddressVO> list = addressService.listAddress();
+        return JsonData.buildSuccess(list);
     }
 
 }

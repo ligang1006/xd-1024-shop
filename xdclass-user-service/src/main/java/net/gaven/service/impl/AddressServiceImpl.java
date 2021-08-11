@@ -15,10 +15,13 @@ import net.gaven.vo.AddressVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -30,13 +33,6 @@ import java.util.Date;
 public class AddressServiceImpl implements IAddressService {
     @Resource
     private AddressMapper addressMapper;
-
-
-    @Override
-    public AddressDO getAddressById(Integer id) {
-        AddressDO addressDO = addressMapper.selectById(id);
-        return addressDO;
-    }
 
     /**
      * 1、判断是否有过默认地址
@@ -61,8 +57,6 @@ public class AddressServiceImpl implements IAddressService {
             addressMapper.update(defaultAddressDO, new QueryWrapper<AddressDO>().eq("id", defaultAddressDO.getId()));
         }
         saveAddressDo(addressAddRequest, loginUser.getId());
-
-
     }
 
     private void saveAddressDo(AddressAddRequest addressAddRequest, Long id) {
@@ -73,6 +67,14 @@ public class AddressServiceImpl implements IAddressService {
         int rows = addressMapper.insert(addressDO);
         log.info("add address rows:{},data{}", rows, addressDO);
     }
+
+
+    @Override
+    public AddressDO getAddressById(Integer id) {
+        AddressDO addressDO = addressMapper.selectById(id);
+        return addressDO;
+    }
+
 
     /**
      * 通过Id获取收货地址
@@ -96,6 +98,31 @@ public class AddressServiceImpl implements IAddressService {
         } else {
             return null;
         }
+    }
+
+    /**
+     * 获取列表信息
+     * 只有有转化的就想到 java8的map A--->B有对象的转化
+     *
+     * @return
+     */
+    @Override
+    public List<AddressVO> listAddress() {
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        Long userId = loginUser.getId();
+        if (userId != null) {
+            List<AddressDO> addressDOS = addressMapper.selectList(new QueryWrapper<AddressDO>().eq("user_id", userId));
+            if (!CollectionUtils.isEmpty(addressDOS)) {
+                List<AddressVO> collect = addressDOS.stream().map(obj -> {
+                    AddressVO addressVO = new AddressVO();
+                    BeanUtils.copyProperties(obj, addressVO);
+                    return addressVO;
+                }).collect(Collectors.toList());
+                return collect;
+            }
+            return null;
+        }
+        return null;
     }
 
     /**
