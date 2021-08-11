@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.model.LoginUser;
-import net.gaven.model.UserDO;
 import net.gaven.util.CommonUtil;
 import net.gaven.util.yonyou.JWTUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +43,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
         //未登录
         if (StringUtils.isEmpty(accessToken)) {
-            CommonUtil.sendJsonMessage(response, BizCodeEnum.ACCOUNT_UNLOGIN);
+            CommonUtil.sendJsonMessage(response, BizCodeEnum.ACCOUNT_UNLOGIN.getMessage());
             return false;
 
         } else {
@@ -73,7 +72,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             }
 
         }
-        CommonUtil.sendJsonMessage(response, BizCodeEnum.ACCOUNT_UNLOGIN);
+        CommonUtil.sendJsonMessage(response, BizCodeEnum.ACCOUNT_UNLOGIN.getMessage());
         return false;
     }
 
