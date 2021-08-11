@@ -78,6 +78,8 @@ public class AddressServiceImpl implements IAddressService {
 
     /**
      * 通过Id获取收货地址
+     * <p>
+     * 注意越权问题
      *
      * @param addressId
      * @return
@@ -88,8 +90,14 @@ public class AddressServiceImpl implements IAddressService {
         if (StringUtils.isEmpty(addressId)) {
             return null;
         }
-
-        AddressDO addressDO = addressMapper.selectOne(new QueryWrapper<AddressDO>().eq("id", addressId));
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        if (loginUser == null) {
+            return null;
+        }
+        AddressDO addressDO = addressMapper
+                .selectOne(new QueryWrapper<AddressDO>()
+                        .eq("id", addressId)
+                        .eq("user_id", loginUser.getId()));
 
         if (addressDO != null) {
             AddressVO addressVO = new AddressVO();
@@ -127,13 +135,22 @@ public class AddressServiceImpl implements IAddressService {
 
     /**
      * TODO 注意，这里查询不到时删除会有问题吗？
+     * 没问题
+     * 注意越权问题
      *
      * @param addressId
      * @return
      */
     @Override
     public int deleteAddress(int addressId) {
-        int rows = addressMapper.delete(new QueryWrapper<AddressDO>().eq("id", addressId));
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        if (loginUser == null) {
+            return 0;
+        }
+        int rows = addressMapper
+                .delete(new QueryWrapper<AddressDO>()
+                        .eq("id", addressId)
+                        .eq("user_id", loginUser.getId()));
         return rows;
     }
 }
