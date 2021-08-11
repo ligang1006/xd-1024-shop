@@ -1,6 +1,7 @@
 package net.gaven.service;
 
 import net.gaven.model.AddressDO;
+import net.gaven.request.AddressAddRequest;
 
 /**
  * <p>
@@ -19,4 +20,10 @@ public interface IAddressService {
      */
     AddressDO getAddressById(Integer id);
 
+    /**
+     * 增加收货地址
+     *
+     * @param addressAddRequest
+     */
+    void addAddress(AddressAddRequest addressAddRequest);
 }

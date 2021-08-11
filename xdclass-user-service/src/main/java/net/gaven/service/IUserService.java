@@ -6,6 +6,7 @@ import net.gaven.model.UserDO;
 import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
 import net.gaven.util.JsonData;
+import net.gaven.vo.UserVO;
 
 /**
  * <p>
@@ -37,4 +38,12 @@ public interface IUserService {
      * @return
      */
     JsonData login(UserLoginRequest loginRequest);
+
+    /**
+     * 获取用户详情信息
+     *
+     * @return
+     */
+    UserVO getUserDetail();
+
 }

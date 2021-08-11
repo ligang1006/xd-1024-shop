@@ -45,6 +45,9 @@ public class JWTUtil {
     public static String generateJsonWebToken(LoginUser loginUser) {
         //Claims claims = Jwts.claims().setSubject("Me");
         //       String jwt = Jwts.builder().setClaims(claims).compact();
+        if (loginUser == null) {
+            throw new NullPointerException("loginUser对象为空");
+        }
         String token = Jwts.builder().setSubject(SUBJECT)
                 .claim("head_img", loginUser.getHeadImg())
                 .claim("id", loginUser.getId())

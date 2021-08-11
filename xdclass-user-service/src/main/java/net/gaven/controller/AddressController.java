@@ -8,14 +8,11 @@ import io.swagger.models.auth.In;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.exception.CustomException;
 import net.gaven.model.AddressDO;
+import net.gaven.request.AddressAddRequest;
 import net.gaven.service.IAddressService;
 import net.gaven.util.JsonData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * <p>
@@ -46,6 +43,19 @@ public class AddressController {
 
         }
         return JsonData.buildSuccess(addressDO);
+    }
+
+    /**
+     * 新增收货地址
+     *
+     * @param addressAddRequest
+     * @return
+     */
+    @ApiOperation("新增收货地址")
+    @PostMapping("/add")
+    public JsonData addAddress(@RequestBody AddressAddRequest addressAddRequest) {
+        addressService.addAddress(addressAddRequest);
+        return JsonData.buildSuccess("add address success");
     }
 
 }

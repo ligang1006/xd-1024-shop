@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.model.UserDO;
 import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
 import net.gaven.service.ICaptchaService;
@@ -14,6 +15,7 @@ import net.gaven.service.IUserService;
 import net.gaven.util.HttpUtil;
 import net.gaven.util.JsonData;
 import net.gaven.util.MD5Util;
+import net.gaven.vo.UserVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -101,6 +103,13 @@ public class UserController {
         JsonData jsonData = userService.login(loginRequest);
         return jsonData;
 
+    }
+
+    @ApiOperation("获取用户详情")
+    @GetMapping("/detail")
+    public JsonData getUserDetail() {
+        UserVO userVO = userService.getUserDetail();
+        return JsonData.buildSuccess(userVO);
     }
 
 

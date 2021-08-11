@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
+import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.UserMapper;
 import net.gaven.model.LoginUser;
 import net.gaven.model.UserDO;
@@ -15,11 +16,13 @@ import net.gaven.util.JsonData;
 import net.gaven.util.MD5Util;
 import net.gaven.util.RandomUtil;
 import net.gaven.util.yonyou.JWTUtil;
+import net.gaven.vo.UserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +36,7 @@ import java.util.List;
 public class UserServiceImpl implements IUserService {
     @Autowired
     private INotifyService notifyService;
-    @Autowired
+    @Resource
     private UserMapper userMapper;
 
 
@@ -107,7 +110,7 @@ public class UserServiceImpl implements IUserService {
      * 1、拿到mail到数据库进行匹配,如果存储在
      * 2、拿到对应到盐，通过pwd+盐 ==>校验与数据库到pwd是否相同
      * <p>
-     *     token的刷新。前端存储token和expireTime和re
+     * token的刷新。前端存储token和expireTime和re
      * <p>
      * 加强校验 ip进行校验
      *
@@ -128,7 +131,8 @@ public class UserServiceImpl implements IUserService {
             String cryptPwd = MD5Util.getCryptPwd(pwd, salt);
             //与数据库的pwd进行比较，增加更强的校验，传ip ip也进行校验
             if (cryptPwd.equals(dbPwd)) {
-                String token = generateJWT(userDOS);
+                String token = generateJWT(userDOS.get(0));
+                log.info("token =={}", token);
                 //生成token TODO
                 return JsonData.buildSuccess(token);
             } else {
@@ -141,12 +145,28 @@ public class UserServiceImpl implements IUserService {
 
     }
 
-    private String generateJWT(List<UserDO> userDOS) {
+    private String generateJWT(UserDO userDO) {
         LoginUser loginUser = new LoginUser();
-        BeanUtils.copyProperties(userDOS, loginUser);
+        BeanUtils.copyProperties(userDO, loginUser);
         String token = JWTUtil.generateJsonWebToken(loginUser);
         return token;
     }
 
+    @Override
+    public UserVO getUserDetail() {
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        if (loginUser != null) {
+            Long userId = loginUser.getId();
+            UserDO userDO = userMapper.selectOne(new QueryWrapper<UserDO>().eq("id", userId));
+            if (userDO != null) {
+                UserVO userVO = new UserVO();
+                BeanUtils.copyProperties(userDO, userVO);
+                return userVO;
+            }
+            return null;
+        } else {
+            return null;
+        }
 
+    }
 }
