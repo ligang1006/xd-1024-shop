@@ -11,6 +11,7 @@ import net.gaven.model.AddressDO;
 import net.gaven.request.AddressAddRequest;
 import net.gaven.service.IAddressService;
 import net.gaven.util.JsonData;
+import net.gaven.vo.AddressVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +57,34 @@ public class AddressController {
     public JsonData addAddress(@RequestBody AddressAddRequest addressAddRequest) {
         addressService.addAddress(addressAddRequest);
         return JsonData.buildSuccess("add address success");
+    }
+
+    /**
+     * 获取收货地址
+     *
+     * @param addressId
+     * @return
+     */
+    @ApiOperation("获取收货地址")
+    @PostMapping("/detail")
+    public JsonData addressDetail(@ApiParam("查询的地址Id")
+                                  @RequestParam(value = "address_id") int addressId) {
+        AddressVO addressVO = addressService.getAddressDetail(addressId);
+        return addressVO == null ? JsonData.buildResult(BizCodeEnum.ADDRESS_NO_EXITS) : JsonData.buildSuccess(addressVO);
+    }
+
+    /**
+     * 删除收货地址
+     *
+     * @param addressId
+     * @return
+     */
+    @ApiOperation("删除收货地址")
+    @PostMapping("/delete")
+    public JsonData addressDelete(@ApiParam("删除的地址Id")
+                                  @RequestParam(value = "address_id") int addressId) {
+        int rows = addressService.deleteAddress(addressId);
+        return rows == 1 ? JsonData.buildSuccess() : JsonData.buildResult(BizCodeEnum.ADDRESS_DEL_FAIL);
     }
 
 }

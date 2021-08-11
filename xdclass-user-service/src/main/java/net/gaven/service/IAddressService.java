@@ -2,6 +2,7 @@ package net.gaven.service;
 
 import net.gaven.model.AddressDO;
 import net.gaven.request.AddressAddRequest;
+import net.gaven.vo.AddressVO;
 
 /**
  * <p>
@@ -26,4 +27,20 @@ public interface IAddressService {
      * @param addressAddRequest
      */
     void addAddress(AddressAddRequest addressAddRequest);
+
+    /**
+     * 获取收货地址详情
+     *
+     * @param addressId
+     * @return
+     */
+    AddressVO getAddressDetail(int addressId);
+
+    /**
+     * 根据Id删除收货地址
+     *
+     * @param addressId
+     * @return
+     */
+    int deleteAddress(int addressId);
 }

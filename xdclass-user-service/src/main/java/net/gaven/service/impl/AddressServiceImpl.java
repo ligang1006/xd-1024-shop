@@ -11,9 +11,11 @@ import net.gaven.model.LoginUser;
 import net.gaven.request.AddressAddRequest;
 import net.gaven.service.IAddressService;
 
+import net.gaven.vo.AddressVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Date;
@@ -70,5 +72,41 @@ public class AddressServiceImpl implements IAddressService {
         addressDO.setCreateTime(new Date());
         int rows = addressMapper.insert(addressDO);
         log.info("add address rows:{},data{}", rows, addressDO);
+    }
+
+    /**
+     * 通过Id获取收货地址
+     *
+     * @param addressId
+     * @return
+     */
+    @Override
+    public AddressVO getAddressDetail(int addressId) {
+
+        if (StringUtils.isEmpty(addressId)) {
+            return null;
+        }
+
+        AddressDO addressDO = addressMapper.selectOne(new QueryWrapper<AddressDO>().eq("id", addressId));
+
+        if (addressDO != null) {
+            AddressVO addressVO = new AddressVO();
+            BeanUtils.copyProperties(addressDO, addressVO);
+            return addressVO;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * TODO 注意，这里查询不到时删除会有问题吗？
+     *
+     * @param addressId
+     * @return
+     */
+    @Override
+    public int deleteAddress(int addressId) {
+        int rows = addressMapper.delete(new QueryWrapper<AddressDO>().eq("id", addressId));
+        return rows;
     }
 }
