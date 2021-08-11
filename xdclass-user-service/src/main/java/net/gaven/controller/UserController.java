@@ -78,7 +78,7 @@ public class UserController {
             @ApiParam(value = "file", required = true)
             @RequestPart("file") MultipartFile file) {
         String userImageUrl = fileService.uploadUserImage(file);
-        return StringUtils.isNotEmpty(userImageUrl) ? JsonData.buildSuccess(userImageUrl) : JsonData.buildResult(BizCodeEnum.FILE_UPLOAD_USER_IMAGE_FAIL);
+        return StringUtils.isNotEmpty(userImageUrl) ? JsonData.buildSuccess(userImageUrl) : JsonData.buildResult(BizCodeEnum.FILE_UPLOAD_USER_IMG_FAIL);
     }
 
     @ApiOperation("用户注册")

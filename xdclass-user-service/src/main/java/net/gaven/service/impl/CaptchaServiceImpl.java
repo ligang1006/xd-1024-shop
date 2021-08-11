@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import java.awt.image.BufferedImage;
@@ -26,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class CaptchaServiceImpl implements ICaptchaService {
-    @Autowired
+    @Resource
     private Producer captchaProduct;
 
     @Autowired
@@ -85,6 +86,6 @@ public class CaptchaServiceImpl implements ICaptchaService {
            return notifyService.sendCode(SendCodeEnum.USER_REGISTER, to);
 
         }
-        return JsonData.buildResult(BizCodeEnum.CODE_CAPTCHA);
+        return JsonData.buildResult(BizCodeEnum.CODE_CAPTCHA_ERROR);
     }
 }

@@ -66,9 +66,9 @@ public class AddressController {
      * @return
      */
     @ApiOperation("获取收货地址")
-    @PostMapping("/detail")
+    @GetMapping("/detail/{address_id}")
     public JsonData addressDetail(@ApiParam("查询的地址Id")
-                                  @RequestParam(value = "address_id") int addressId) {
+                                  @PathVariable(value = "address_id") int addressId) {
         AddressVO addressVO = addressService.getAddressDetail(addressId);
         return addressVO == null ? JsonData.buildResult(BizCodeEnum.ADDRESS_NO_EXITS) : JsonData.buildSuccess(addressVO);
     }
@@ -80,11 +80,11 @@ public class AddressController {
      * @return
      */
     @ApiOperation("删除收货地址")
-    @PostMapping("/delete")
+    @DeleteMapping("/delete/{address_id}")
     public JsonData addressDelete(@ApiParam("删除的地址Id")
-                                  @RequestParam(value = "address_id") int addressId) {
+                                  @PathVariable(value = "address_id") int addressId) {
         int rows = addressService.deleteAddress(addressId);
-        return rows == 1 ? JsonData.buildSuccess() : JsonData.buildResult(BizCodeEnum.ADDRESS_DEL_FAIL);
+        return rows == 1 ? JsonData.buildSuccess("delete address success " + addressId) : JsonData.buildResult(BizCodeEnum.ADDRESS_DEL_FAIL);
     }
 
 }
