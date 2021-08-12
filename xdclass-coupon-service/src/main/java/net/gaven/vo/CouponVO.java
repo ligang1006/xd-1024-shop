@@ -1,38 +1,26 @@
-package net.gaven.model;
+package net.gaven.vo;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
-
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
-
 import java.util.Date;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-
-import java.io.Serializable;
-
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
 /**
- * <p>
- *
- * </p>
- *
- * @author lee
- * @since 2021-08-12
- */
+ * @author: lee
+ * @create: 2021/8/12 10:53 上午
+ **/
+@Slf4j
 @Data
-@EqualsAndHashCode(callSuper = false)
-@TableName("coupon")
-public class CouponDO implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class CouponVO {
 
     /**
      * id
      */
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
@@ -40,19 +28,17 @@ public class CouponDO implements Serializable {
      */
     private String category;
 
-    /**
-     * 发布状态, PUBLISH发布，DRAFT草稿，OFFLINE下线
-     */
-    private String publish;
 
     /**
      * 优惠券图片
      */
+    @JsonProperty("coupon_img")
     private String couponImg;
 
     /**
      * 优惠券标题
      */
+    @JsonProperty("coupon_title")
     private String couponTitle;
 
     /**
@@ -63,21 +49,27 @@ public class CouponDO implements Serializable {
     /**
      * 每人限制张数
      */
+    @JsonProperty("user_limit")
     private Integer userLimit;
 
     /**
      * 优惠券开始有效时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss", locale = "zh", timezone = "GMT+8")
+    @JsonProperty("start_time")
     private Date startTime;
 
     /**
      * 优惠券失效时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss", locale = "zh", timezone = "GMT+8")
+    @JsonProperty("end_time")
     private Date endTime;
 
     /**
      * 优惠券总量
      */
+    @JsonProperty("publish_count")
     private Integer publishCount;
 
     /**
@@ -85,12 +77,11 @@ public class CouponDO implements Serializable {
      */
     private Integer stock;
 
-    private Date createTime;
 
     /**
      * 满多少才可以使用
      */
+    @JsonProperty("condition_price")
     private BigDecimal conditionPrice;
-
 
 }
