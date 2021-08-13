@@ -1,7 +1,7 @@
 package net.gaven.handler;
 
 import lombok.extern.slf4j.Slf4j;
-import net.gaven.exception.CustomException;
+import net.gaven.exception.BizException;
 import net.gaven.util.JsonData;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,10 +19,10 @@ public class CustomExceptionHandle {
     @ExceptionHandler(Exception.class)
     public JsonData handlerException(Exception e) {
         //自定义异常
-        if (e instanceof CustomException) {
-            CustomException customException = (CustomException) e;
+        if (e instanceof BizException) {
+            BizException bizException = (BizException) e;
             log.info("[业务异常]{}", e);
-            return JsonData.buildError(customException.getMessage());
+            return JsonData.buildError(bizException.getMessage());
         } else {
             log.info("[非业务异常]{}", e);
             return JsonData.buildError("全局异常，未知错误" + e.getMessage());

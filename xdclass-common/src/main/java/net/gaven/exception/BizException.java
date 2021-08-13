@@ -9,18 +9,18 @@ import org.springframework.stereotype.Component;
  * @create: 2021/8/4 8:32 上午
  **/
 
-public class CustomException extends RuntimeException {
+public class BizException extends RuntimeException {
 
     private Integer code;
     private String msg;
 
-    public CustomException(Integer code, String msg) {
+    public BizException(Integer code, String msg) {
         super(msg);
         this.code = code;
         this.msg = msg;
     }
 
-    public CustomException(BizCodeEnum bizCodeEnum) {
+    public BizException(BizCodeEnum bizCodeEnum) {
         super(bizCodeEnum.getMessage());
         this.code = bizCodeEnum.getCode();
         this.msg = bizCodeEnum.getMessage();
