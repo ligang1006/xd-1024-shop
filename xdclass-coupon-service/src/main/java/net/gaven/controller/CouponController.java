@@ -25,7 +25,7 @@ import java.util.Map;
  */
 @Api("优惠券接口")
 @RestController
-@RequestMapping("/api/v1/coupon")
+@RequestMapping("/api/coupon/v1")
 public class CouponController {
     @Autowired
     private ICouponService couponService;
