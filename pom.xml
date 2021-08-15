@@ -42,6 +42,8 @@
         <aliyun.soo.version>3.10.2</aliyun.soo.version>
         <!--jwt生成-->
         <jsonweb.token.version>0.7.0</jsonweb.token.version>
+        <!--redission-->
+        <org.redission.version>3.10.1</org.redission.version>
     </properties>
 
     <!--锁定版本-->
@@ -143,6 +145,13 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
                 <version>${jsonweb.token.version}</version>
+            </dependency>
+
+            <!--分布式锁-->
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson</artifactId>
+                <version>${org.redission.version}</version>
             </dependency>
 
         </dependencies>
