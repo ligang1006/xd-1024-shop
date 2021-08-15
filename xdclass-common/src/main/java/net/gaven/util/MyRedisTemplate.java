@@ -1,9 +1,13 @@
 package net.gaven.util;
 
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @create: 2021/8/5 8:42 上午
  **/
 @Component
-public class MyRedisTemplate {
+public class MyRedisTemplate<K, V, T> {
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -29,6 +33,19 @@ public class MyRedisTemplate {
 
         redisTemplate.opsForValue().set(key, value, timeOut, timeUnit);
 
+    }
+
+    /**
+     * 如果不存在则设置成功
+     *
+     * @param key
+     * @param value
+     * @param timeOut
+     * @param timeUnit
+     * @return
+     */
+    public Boolean setIfAbsent(String key, String value, long timeOut, TimeUnit timeUnit) {
+        return redisTemplate.opsForValue().setIfAbsent(key, value, timeOut, timeUnit);
     }
 
     /**
@@ -58,5 +75,16 @@ public class MyRedisTemplate {
         return redisTemplate.delete(key);
     }
 
-
+    /**
+     * 泛型的使用
+     *
+     * @param script
+     * @param keys
+     * @param args
+     * @param <T>
+     * @return
+     */
+    public <T> T luaKey(RedisScript<T> script, List<K> keys, Object... args) {
+        return (T) redisTemplate.execute(script, keys, args);
+    }
 }
