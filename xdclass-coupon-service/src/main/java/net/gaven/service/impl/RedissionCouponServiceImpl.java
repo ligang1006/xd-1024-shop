@@ -21,6 +21,7 @@ import net.gaven.util.MyRedisTemplate;
 import net.gaven.util.RandomUtil;
 import net.gaven.vo.CouponVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;

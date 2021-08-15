@@ -1,0 +1,6 @@
+
+spring:
+  redis:
+    host: 123.57.32.9
+    password: 123456
+    port: 8001

@@ -1,6 +1,9 @@
 package net.gaven.controller;
 
-
+import lombok.extern.slf4j.Slf4j;
+import net.gaven.util.MyRedissionClient;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -11,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -20,12 +24,17 @@ import java.util.Map;
  * @author lee
  * @since 2021-08-12
  */
+@Slf4j
 @Api("优惠券接口")
 @RestController
 @RequestMapping("/api/coupon/v1")
 public class CouponController {
     @Autowired
     private ICouponService couponService;
+    //    @Autowired
+//    private MyRedissionClient redissionClient;
+    @Autowired
+    private RedissonClient redissonClient;
 
     /**
      * @return
@@ -44,6 +53,25 @@ public class CouponController {
                               @PathVariable("coupon_id") Long couponId) {
         return couponService.addCoupon(couponId, CouponCategoryEnum.PROMOTION);
     }
+
+    @GetMapping("/test_redission/{coupon_id}")
+    public JsonData testRedission(@PathVariable("coupon_id") Long couponId) {
+        RLock lock = redissonClient.getLock("lock:coupon:" + couponId);
+        try {
+            lock.lock(60, TimeUnit.SECONDS);
+            log.info("加锁成功" + couponId + ":" + Thread.currentThread().getName());
+            TimeUnit.SECONDS.sleep(6);
+        } catch (Exception e) {
+            log.error("get error", e);
+        } finally {
+
+            lock.unlock();
+            log.info("un lock success" + "couponId:" + couponId + "thread" + Thread.currentThread().getName());
+        }
+
+        return JsonData.buildSuccess("get lock success");
+    }
+
 
 }
 
