@@ -21,6 +21,7 @@ import net.gaven.util.MyRedisTemplate;
 import net.gaven.util.RandomUtil;
 import net.gaven.vo.CouponVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @create: 2021/8/12 10:27 上午
  **/
 @Slf4j
+@Primary
 @Service("redission")
 public class RedissionCouponServiceImpl implements ICouponService {
     @Resource
