@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -89,6 +90,25 @@ public class RedissionCouponServiceImpl implements ICouponService {
      * 2、校验优惠卷是否能够领取，时间、库存、类型
      * 3、扣减优惠卷
      * 4、存库
+     * try {
+     * //加锁成功,其他线程进入会阻塞等待
+     * lock = redissioClient.getLock(lockKey);
+     * //有看门狗，默认30s 每10s钟会检查一下是否过期，如果快过期了会自动续期
+     * lock.lock();
+     * //没有watch dog
+     * //            lock.lock(10,TimeUnit.SECONDS);
+     * log.info("add lock success key:{} threadId:{}", lockKey, Thread.currentThread().getId());
+     * //扣费逻辑
+     * //这里有问题，没有被抛出
+     * getCoupon(couponId, category, loginUser);
+     * } catch (Exception e) {
+     * log.error("获取优惠卷发生异常{}", e);
+     * } finally {
+     * lock.unlock();
+     * log.info("成功解锁 当前线程Id:{}", Thread.currentThread().getId());
+     * }
+     * <p>
+     * 注意 ⚠️    try catch 之后，如果问题抛不出去，事务不执行
      *
      * @param couponId
      * @param category
@@ -110,14 +130,21 @@ public class RedissionCouponServiceImpl implements ICouponService {
             log.info("add lock success key:{} threadId:{}", lockKey, Thread.currentThread().getId());
             //扣费逻辑
             getCoupon(couponId, category, loginUser);
-        } finally {
+        }
+        /*注意： ⚠️这里不能catch否则事务抛不出去*/
+//        catch (Exception e) {
+//            log.error("获取优惠卷发生异常{}", e);
+//        }
+        finally {
             lock.unlock();
             log.info("成功解锁 当前线程Id:{}", Thread.currentThread().getId());
         }
         return JsonData.buildSuccess("get coupon success");
     }
 
-    private void getCoupon(Long couponId, CouponCategoryEnum category, LoginUser loginUser) {
+
+    //        @Transactional(propagation = Propagation.NEVER)
+    void getCoupon(Long couponId, CouponCategoryEnum category, LoginUser loginUser) {
 
         //校验校验优惠卷是否存在
         CouponDO couponDO = couponMapper.selectOne(new QueryWrapper<CouponDO>()
@@ -143,6 +170,8 @@ public class RedissionCouponServiceImpl implements ICouponService {
         int reduceNum = couponMapper.reduceStock(couponId);
 //        int reduceNum = 1;
         //存库
+        //事务验证
+        int flag = 1 / 0;
         if (reduceNum == 1) {
             reduceCoupon(couponRecordDO);
         } else {
