@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  * @create: 2021/8/12 10:27 上午
  **/
 @Slf4j
-//@Service("row")
+@Service("row")
 public class RowRedisCouponServiceImpl implements ICouponService {
     @Resource
     private CouponMapper couponMapper;
