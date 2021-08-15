@@ -4,14 +4,12 @@ package net.gaven.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import net.gaven.enums.BizCodeEnum;
 import net.gaven.service.ICouponRecordService;
 import net.gaven.util.JsonData;
+import net.gaven.vo.CouponRecordVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Map;
@@ -37,6 +35,16 @@ public class CouponRecordController {
                             @ApiParam("每页数量") @RequestParam(value = "size", defaultValue = "10") Integer size) {
         Map<String, Object> res = recordService.page(page, size);
         return JsonData.buildSuccess(res);
+    }
+
+    @ApiOperation("获取优惠卷记录详情")
+    @GetMapping("/detail/{record_id}")
+    public JsonData detail(@ApiParam("优惠卷Id")
+                           @PathVariable(value = "record_id") Long recordId) {
+        CouponRecordVO recordVO = recordService.detail(recordId);
+        return recordVO == null
+                ? JsonData.buildResult(BizCodeEnum.COUPON_NO_EXITS)
+                : JsonData.buildSuccess(recordVO);
     }
 }
 

@@ -1,5 +1,7 @@
 package net.gaven.service;
 
+import net.gaven.vo.CouponRecordVO;
+
 import java.util.Map;
 
 /**
@@ -15,4 +17,12 @@ public interface ICouponRecordService {
      * @return
      */
     Map<String, Object> page(Integer page, Integer size);
+
+    /**
+     * 获取详情
+     *
+     * @param recordId
+     * @return
+     */
+    CouponRecordVO detail(Long recordId);
 }

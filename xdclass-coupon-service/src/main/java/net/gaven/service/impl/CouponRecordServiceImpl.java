@@ -46,12 +46,27 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
         result.put("total_record", total);
         result.put("total_page", pages);
         if (!CollectionUtils.isEmpty(records)) {
-            result.put("coupon_data", records.stream().map(obj -> getProcess(obj)).collect(Collectors.toList()));
+            result.put("coupon_data", records.stream().map(obj -> convertDO2VOProcess(obj)).collect(Collectors.toList()));
         }
         return result;
     }
 
-    private CouponRecordVO getProcess(CouponRecordDO couponRecordDO) {
+    @Override
+    public CouponRecordVO detail(Long recordId) {
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        if (loginUser == null) {
+            return null;
+        }
+        CouponRecordDO couponRecordDO = couponRecordMapper.selectOne(new QueryWrapper<CouponRecordDO>()
+                .eq("user_id", loginUser.getId())
+                .eq("id", recordId));
+        if (couponRecordDO == null) {
+            return null;
+        }
+        return convertDO2VOProcess(couponRecordDO);
+    }
+
+    private CouponRecordVO convertDO2VOProcess(CouponRecordDO couponRecordDO) {
         CouponRecordVO recordVO = new CouponRecordVO();
         BeanUtils.copyProperties(couponRecordDO, recordVO);
         return recordVO;
