@@ -171,7 +171,7 @@ public class RedissionCouponServiceImpl implements ICouponService {
 //        int reduceNum = 1;
         //存库
         //事务验证
-        int flag = 1 / 0;
+//        int flag = 1 / 0;
         if (reduceNum == 1) {
             reduceCoupon(couponRecordDO);
         } else {
