@@ -15,6 +15,7 @@ import net.gaven.mapper.CouponRecordMapper;
 import net.gaven.model.CouponDO;
 import net.gaven.model.CouponRecordDO;
 import net.gaven.model.LoginUser;
+import net.gaven.request.NewUserCouponRequest;
 import net.gaven.service.ICouponService;
 import net.gaven.util.JsonData;
 import net.gaven.util.MyRedisTemplate;
@@ -32,12 +33,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -212,6 +211,46 @@ public class RedissionCouponServiceImpl implements ICouponService {
         if (selectNum > couponDO.getUserLimit()) {
             throw new BizException(BizCodeEnum.COUPON_OUT_OF_LIMIT);
         }
+    }
 
+    /**
+     * 新人发放优惠卷
+     * 1、事务回滚问题？？？记录日志，之后补发
+     * 2、用户那时还没登录，生成不了token，所以不能拦截当前接口
+     * 3、本地直接调用发放优惠券的方法，需要构造一个登录用户存储在threadLocal
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public JsonData getNewUserCoupon(NewUserCouponRequest request) {
+        //查询新人的优惠卷
+        List<CouponDO> initCoupons = initNewUserCoupon(request.getUserId(), CouponCategoryEnum.NEW_USER);
+        if (CollectionUtils.isEmpty(initCoupons)) {
+            return JsonData.buildResult(BizCodeEnum.COUPON_GET_FAIL);
+        }
+        //设置ThreadLocal
+        LoginUser loginUser = new LoginUser();
+        loginUser.setId(request.getUserId());
+        loginUser.setName(request.getName());
+        LoginInterceptor.threadLocal.set(loginUser);
+
+        initCoupons.forEach(couponDO -> {
+            this.addCoupon(couponDO.getId(), CouponCategoryEnum.NEW_USER);
+        });
+
+        return JsonData.buildSuccess("发送优惠卷成功");
+    }
+
+    private List<CouponDO> initNewUserCoupon(long userId, CouponCategoryEnum categoryEnum) {
+        if (StringUtils.isEmpty(userId) || categoryEnum == null) {
+            return null;
+        } else {
+            //校验是不是新人 TODO
+
+            List<CouponDO> newCoupons = couponMapper.selectList(new QueryWrapper<CouponDO>().
+                    eq("category", categoryEnum.name()));
+            return newCoupons;
+        }
     }
 }

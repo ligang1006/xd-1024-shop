@@ -2,6 +2,7 @@ package net.gaven.service;
 
 
 import net.gaven.enums.CouponCategoryEnum;
+import net.gaven.request.NewUserCouponRequest;
 import net.gaven.util.JsonData;
 
 import java.util.Map;
@@ -28,4 +29,14 @@ public interface ICouponService {
      * @return
      */
     JsonData addCoupon(Long couponId, CouponCategoryEnum promotion);
+
+    /**
+     * 新用户发放优惠卷
+     *
+     * @param request
+     * @return
+     */
+    default JsonData getNewUserCoupon(NewUserCouponRequest request) {
+        return null;
+    }
 }

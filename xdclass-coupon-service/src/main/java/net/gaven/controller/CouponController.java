@@ -1,6 +1,7 @@
 package net.gaven.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.request.NewUserCouponRequest;
 import net.gaven.util.MyRedissionClient;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -70,6 +71,13 @@ public class CouponController {
         }
 
         return JsonData.buildSuccess("get lock success");
+    }
+
+    @ApiOperation("发放优惠卷接口")
+    @PostMapping("/new_user_coupon")
+    public JsonData getNewCoupon(NewUserCouponRequest request) {
+        JsonData jsonData = couponService.getNewUserCoupon(request);
+        return jsonData;
     }
 
 
