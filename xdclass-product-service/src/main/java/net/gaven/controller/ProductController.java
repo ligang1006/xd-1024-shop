@@ -4,14 +4,12 @@ package net.gaven.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import net.gaven.enums.BizCodeEnum;
 import net.gaven.service.IProductService;
 import net.gaven.util.JsonData;
+import net.gaven.vo.ProductVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -36,6 +34,14 @@ public class ProductController {
                             @ApiParam("每页展示数") @RequestParam(value = "size", defaultValue = "10") Integer size) {
         Map<String, Object> list = productService.getList(page, size);
         return JsonData.buildSuccess(list);
+    }
+
+    @ApiOperation("商品详情")
+    @GetMapping("/detail/{product_id}")
+    public JsonData detail(@ApiParam("商品ID")
+                           @PathVariable("product_id") String productId) {
+        ProductVO productVO = productService.productDetail(productId);
+        return productVO == null ? JsonData.buildResult(BizCodeEnum.PRODUCT_NOT_EXITS) : JsonData.buildSuccess(productVO);
     }
 
 }

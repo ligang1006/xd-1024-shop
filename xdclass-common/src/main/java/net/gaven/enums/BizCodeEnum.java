@@ -93,13 +93,17 @@ public enum BizCodeEnum {
     /**
      * 文件相关
      */
-    FILE_UPLOAD_USER_IMG_FAIL(600101, "用户头像文件上传失败");
+    FILE_UPLOAD_USER_IMG_FAIL(600101, "用户头像文件上传失败"),
+    /**
+     * 商品不存在
+     */
+    PRODUCT_NOT_EXITS(700101, "商品不存在");
     @Getter
     private String message;
     @Getter
     private int code;
 
-    private BizCodeEnum(int code, String message) {
+    BizCodeEnum(int code, String message) {
         this.code = code;
         this.message = message;
     }

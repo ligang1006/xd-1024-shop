@@ -51,4 +51,16 @@ public class ProductServiceImpl implements IProductService {
         BeanUtils.copyProperties(obj, productVO);
         return productVO;
     }
+
+    @Override
+    public ProductVO productDetail(String productId) {
+        ProductDO productDO = productMapper.selectOne(
+                new QueryWrapper<ProductDO>().eq("id", productId));
+        if (productDO != null) {
+            ProductVO productVO = new ProductVO();
+            BeanUtils.copyProperties(productDO, productVO);
+            return productVO;
+        }
+        return null;
+    }
 }

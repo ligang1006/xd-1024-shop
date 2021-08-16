@@ -1,6 +1,8 @@
 package net.gaven.service;
 
+import net.gaven.model.ProductDO;
 import net.gaven.util.JsonData;
+import net.gaven.vo.ProductVO;
 
 import java.util.Map;
 
@@ -17,4 +19,12 @@ public interface IProductService {
      * @return
      */
     Map<String, Object> getList(Integer page, Integer size);
+
+    /**
+     * 获取商品详情
+     *
+     * @param productId
+     * @return
+     */
+    ProductVO productDetail(String productId);
 }
