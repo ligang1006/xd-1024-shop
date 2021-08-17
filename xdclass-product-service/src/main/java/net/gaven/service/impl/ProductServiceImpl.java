@@ -53,7 +53,7 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public ProductVO productDetail(String productId) {
+    public ProductVO productDetail(Long productId) {
         ProductDO productDO = productMapper.selectOne(
                 new QueryWrapper<ProductDO>().eq("id", productId));
         if (productDO != null) {

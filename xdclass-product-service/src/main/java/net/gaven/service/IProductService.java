@@ -26,5 +26,5 @@ public interface IProductService {
      * @param productId
      * @return
      */
-    ProductVO productDetail(String productId);
+    ProductVO productDetail(Long productId);
 }

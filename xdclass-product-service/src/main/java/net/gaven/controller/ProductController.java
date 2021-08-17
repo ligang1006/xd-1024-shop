@@ -39,7 +39,7 @@ public class ProductController {
     @ApiOperation("商品详情")
     @GetMapping("/detail/{product_id}")
     public JsonData detail(@ApiParam("商品ID")
-                           @PathVariable("product_id") String productId) {
+                           @PathVariable("product_id") Long productId) {
         ProductVO productVO = productService.productDetail(productId);
         return productVO == null ? JsonData.buildResult(BizCodeEnum.PRODUCT_NOT_EXITS) : JsonData.buildSuccess(productVO);
     }
