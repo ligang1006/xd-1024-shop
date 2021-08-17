@@ -115,6 +115,13 @@ public class ICartItemsServiceImpl implements ICartService {
         redisTemplate.delete(cartKey);
     }
 
+    @Override
+    public void deleteItem(Long productId) {
+        BoundHashOperations<String, Object, Object> myCartOps = getMyCartOps();
+        String strProductId = String.valueOf(productId);
+        myCartOps.delete(strProductId);
+    }
+
     /**
      * 获取购物车最新的价钱
      *
@@ -181,5 +188,22 @@ public class ICartItemsServiceImpl implements ICartService {
             productVO.setOldAmount(productVO.getAmount());
             productVO.setAmount(lasted.getAmount());
         });
+    }
+
+    /**
+     * 修改购物车
+     * 1、首先获取购物车
+     * 2、设置商品数量
+     *
+     * @param cartItemRequest
+     */
+    @Override
+    public void changeMyCart(CartItemRequest cartItemRequest) {
+        //
+        long productId = cartItemRequest.getProductId();
+        int buyNum = cartItemRequest.getBuyNum();
+        if (buyNum < 0) {
+            throw new BizException(BizCodeEnum.PRODUCT_NUM_NEGATIVE);
+        }
     }
 }

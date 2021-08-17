@@ -26,4 +26,18 @@ public interface ICartService {
      * @return
      */
     CartVO getMyCart();
+
+    /**
+     * 清空某个商品
+     *
+     * @param productId
+     */
+    void deleteItem(Long productId);
+
+    /**
+     * 修改购物车
+     *
+     * @param cartItemRequest
+     */
+    void changeMyCart(CartItemRequest cartItemRequest);
 }
