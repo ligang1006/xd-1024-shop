@@ -199,11 +199,22 @@ public class ICartItemsServiceImpl implements ICartService {
      */
     @Override
     public void changeMyCart(CartItemRequest cartItemRequest) {
-        //
         long productId = cartItemRequest.getProductId();
         int buyNum = cartItemRequest.getBuyNum();
         if (buyNum < 0) {
             throw new BizException(BizCodeEnum.PRODUCT_NUM_NEGATIVE);
         }
+        String strProductId = String.valueOf(productId);
+        BoundHashOperations<String, Object, Object> myCartOps = getMyCartOps();
+        Object o = myCartOps.get(strProductId);
+
+        String jsonItem = "";
+        jsonItem = (String) o;
+        if (StringUtils.isEmpty(jsonItem)) {
+            throw new BizException(BizCodeEnum.PRODUCT_NUM_NEGATIVE);
+        }
+        CartItemVO cartItemVO = JSON.parseObject(jsonItem, CartItemVO.class);
+        cartItemVO.setBuyNum(buyNum);
+        myCartOps.put(strProductId, JSON.toJSONString(cartItemVO));
     }
 }
