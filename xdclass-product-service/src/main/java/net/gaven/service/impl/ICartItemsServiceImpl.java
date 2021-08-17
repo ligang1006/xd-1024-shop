@@ -101,4 +101,10 @@ public class ICartItemsServiceImpl implements ICartService {
         String cartKey = String.format(CacheKey.CART_KEY, loginUser.getId());
         return cartKey;
     }
+
+    @Override
+    public void clear() {
+        String cartKey = getCartKey();
+        redisTemplate.delete(cartKey);
+    }
 }

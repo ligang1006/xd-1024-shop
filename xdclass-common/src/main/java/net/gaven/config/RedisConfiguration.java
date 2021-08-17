@@ -31,6 +31,7 @@ public class RedisConfiguration {
         redisTemplate.setKeySerializer(stringSerializer());
         //设置value序列化要使用的模板，默认是JdkSerializationRedisSerializer
         redisTemplate.setValueSerializer(jacksonSerializer());
+
         //设置次莫版要使用的哈希key(或field)序列化程序，默认是JdkSerializationRedisSerializer
         redisTemplate.setHashKeySerializer(stringSerializer());
         //设置此模板要使用的哈希值序列化程序，默认是JdkSerializationRedisSerializer

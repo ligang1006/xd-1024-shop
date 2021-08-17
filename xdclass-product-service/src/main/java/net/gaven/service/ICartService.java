@@ -13,4 +13,9 @@ public interface ICartService {
      * @param cartItemRequest
      */
     void addCartItems(CartItemRequest cartItemRequest);
+
+    /**
+     * 清空购物车
+     */
+    void clear();
 }

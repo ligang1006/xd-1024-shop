@@ -27,4 +27,11 @@ public class CartController {
         cartService.addCartItems(cartItemRequest);
         return JsonData.buildSuccess();
     }
+
+    @ApiOperation("清空购物车,没有也不报错")
+    @DeleteMapping("/clear")
+    public JsonData clearCart() {
+        cartService.clear();
+        return JsonData.buildSuccess();
+    }
 }
