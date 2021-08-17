@@ -1,6 +1,7 @@
 package net.gaven.service;
 
 import net.gaven.vo.CartItemRequest;
+import net.gaven.vo.CartVO;
 
 /**
  * @author: lee
@@ -18,4 +19,11 @@ public interface ICartService {
      * 清空购物车
      */
     void clear();
+
+    /**
+     * 获取购物车信息
+     *
+     * @return
+     */
+    CartVO getMyCart();
 }

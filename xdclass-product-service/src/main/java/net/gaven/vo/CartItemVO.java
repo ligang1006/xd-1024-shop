@@ -1,19 +1,19 @@
 package net.gaven.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 
 /**
  * 小滴课堂,愿景：让技术不再难学
  *
- * @Description  购物项
- *
- * @Author 二当家小D
+ * @Description 购物项
+ * @Author lee
  * @Remark 有问题直接联系我，源码-笔记-技术交流群
  * @Version 1.0
  **/
-
+@ToString
 public class CartItemVO {
 
     /**
@@ -95,6 +95,7 @@ public class CartItemVO {
 
     /**
      * 商品单价 * 购买数量
+     *
      * @return
      */
     public BigDecimal getTotalAmount() {

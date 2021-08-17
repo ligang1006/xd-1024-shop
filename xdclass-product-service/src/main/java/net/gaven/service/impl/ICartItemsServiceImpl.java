@@ -11,13 +11,20 @@ import net.gaven.service.ICartService;
 import net.gaven.service.IProductService;
 import net.gaven.vo.CartItemRequest;
 import net.gaven.vo.CartItemVO;
+import net.gaven.vo.CartVO;
 import net.gaven.vo.ProductVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import springfox.documentation.spring.web.json.Json;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author: lee
@@ -54,7 +61,7 @@ public class ICartItemsServiceImpl implements ICartService {
         Integer buyNum = cartItemRequest.getBuyNum();
         String productId = String.valueOf(productIdL);
         //获取购物车
-        BoundHashOperations<String, Object, Object> myCart = getMyCart();
+        BoundHashOperations<String, Object, Object> myCart = getMyCartOps();
 
         //获取商品
         Object o = myCart.get(productId);
@@ -85,7 +92,7 @@ public class ICartItemsServiceImpl implements ICartService {
 
     }
 
-    private BoundHashOperations<String, Object, Object> getMyCart() {
+    private BoundHashOperations<String, Object, Object> getMyCartOps() {
         String cartKey = getCartKey();
         BoundHashOperations boundHashOperations = redisTemplate.boundHashOps(cartKey);
         return boundHashOperations;
@@ -106,5 +113,73 @@ public class ICartItemsServiceImpl implements ICartService {
     public void clear() {
         String cartKey = getCartKey();
         redisTemplate.delete(cartKey);
+    }
+
+    /**
+     * 获取购物车最新的价钱
+     *
+     * @return
+     */
+    @Override
+    public CartVO getMyCart() {
+        //获取购物车
+        log.info("获取购物车开始...");
+        //获取全部购物项
+        List<CartItemVO> cartItemVOList = buildCartItem(false);
+
+        //封装成cartvo
+        CartVO cartVO = new CartVO();
+        cartVO.setCartItems(cartItemVOList);
+        //更新商品价钱
+        return cartVO;
+    }
+
+    /**
+     * 获取最新的购物项，
+     *
+     * @param findLasted 是否获取最新价格
+     * @return
+     */
+    private List<CartItemVO> buildCartItem(boolean findLasted) {
+        //购物车商品列表
+        List<CartItemVO> cartItemVOList = new ArrayList<>();
+        //需要查询的商品列表
+        List<Long> needQueryProducts = new ArrayList<>();
+        BoundHashOperations<String, Object, Object> myCartOps = getMyCartOps();
+        List<Object> values = myCartOps.values();
+        for (Object value : values) {
+            CartItemVO cartItemVO = JSON.parseObject((String) value, CartItemVO.class);
+            log.info("获取的购物车信息为：{}", cartItemVO.toString());
+            //这里获取的是为更新商品的数据
+            cartItemVOList.add(cartItemVO);
+            //需要更新的商品ID
+            needQueryProducts.add(cartItemVO.getProductId());
+        }
+        //需要更新最新的商品信息
+        if (findLasted) {
+            refreshCartProduct(cartItemVOList, needQueryProducts);
+        }
+
+        return cartItemVOList;
+    }
+
+    private void refreshCartProduct(List<CartItemVO> cartItemVOList, List<Long> ids) {
+        log.info("refresh lasted product info cartItemVOList {},ids{}", JSON.toJSONString(cartItemVOList), ids);
+        if (CollectionUtils.isEmpty(cartItemVOList)) {
+            return;
+        }
+        //新的商品信息
+        List<ProductVO> productVOS = productService.getAllProductById(ids);
+        //通过商品进行分类 K:商品Id V:商品信息VO,更新商品直接根据Id查询
+        Map<Long, ProductVO> collects = productVOS.stream().collect(Collectors.toMap(ProductVO::getId, Function.identity()));
+
+        productVOS.forEach(productVO -> {
+            ProductVO lasted = collects.get(productVO.getId());
+            productVO.setCoverImg(lasted.getCoverImg());
+            productVO.setTitle(lasted.getTitle());
+
+            productVO.setOldAmount(productVO.getAmount());
+            productVO.setAmount(lasted.getAmount());
+        });
     }
 }

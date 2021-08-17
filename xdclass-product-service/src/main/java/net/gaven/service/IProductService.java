@@ -4,6 +4,7 @@ import net.gaven.model.ProductDO;
 import net.gaven.util.JsonData;
 import net.gaven.vo.ProductVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,4 +28,12 @@ public interface IProductService {
      * @return
      */
     ProductVO productDetail(Long productId);
+
+    /**
+     * 根据Id获取全部商品信息
+     *
+     * @param ids
+     * @return
+     */
+    List<ProductVO> getAllProductById(List<Long> ids);
 }

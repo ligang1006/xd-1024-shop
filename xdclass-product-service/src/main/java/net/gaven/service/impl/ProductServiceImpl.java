@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -62,5 +63,25 @@ public class ProductServiceImpl implements IProductService {
             return productVO;
         }
         return null;
+    }
+
+    /**
+     * 根据Id查询商品信息
+     *
+     * @param ids
+     * @return
+     */
+    @Override
+    public List<ProductVO> getAllProductById(List<Long> ids) {
+        if (CollectionUtils.isEmpty(ids)) {
+            return null;
+        }
+
+//        productMapper.selectList(new QueryWrapper<ProductDO>().in("id", ids));
+        List<ProductDO> productDOS = productMapper.selectBatchIds(ids);
+        if (CollectionUtils.isEmpty(productDOS)) {
+            return null;
+        }
+        return productDOS.stream().map(obj -> getProductVO(obj)).collect(Collectors.toList());
     }
 }
