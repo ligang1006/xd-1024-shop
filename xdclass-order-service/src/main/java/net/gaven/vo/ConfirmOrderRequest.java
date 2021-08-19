@@ -1,4 +1,4 @@
-package net.xdclass.request;
+package net.gaven.vo;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

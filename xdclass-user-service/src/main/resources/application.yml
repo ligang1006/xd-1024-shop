@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: xdclass-user-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 123.57.32.9:8848
   redis:
     host: 123.57.32.9
     password: 123456

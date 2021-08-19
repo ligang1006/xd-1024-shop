@@ -1,4 +1,4 @@
-package net.gaven;
+package net.gaven.tool;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.annotation.IdType;

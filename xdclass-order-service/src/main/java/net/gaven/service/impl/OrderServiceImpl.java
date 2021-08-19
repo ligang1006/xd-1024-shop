@@ -1,6 +1,9 @@
 package net.gaven.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.service.IOrderService;
+import net.gaven.util.JsonData;
+import net.gaven.vo.ConfirmOrderRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -23,8 +26,8 @@ import org.springframework.stereotype.Service;
  * 2用户微服务-确认收货地址
  * 3商品微服务-获取最新购物项和价格
  * 4订单验价
- * 优惠券微服务-获取优惠券
- * 验证价格
+ * *优惠券微服务-获取优惠券
+ * *验证价格
  * 5锁定优惠券
  * 6锁定商品库存
  * 7创建订单对象
@@ -37,5 +40,9 @@ import org.springframework.stereotype.Service;
  **/
 @Slf4j
 @Service
-public class OrderServiceImpl {
+public class OrderServiceImpl implements IOrderService {
+    @Override
+    public JsonData confirmOrder(ConfirmOrderRequest orderRequest) {
+        return null;
+    }
 }
