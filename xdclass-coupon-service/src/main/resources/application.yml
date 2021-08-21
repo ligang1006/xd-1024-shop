@@ -49,3 +49,15 @@ aliyun:
     access-key-id: LTAI5tFZxPyz7mbq4oRCbbmH
     access-key-secret: Wa3rWKyJBezZdmkz44kCagWQyFXAxU
     bucketname: lee-beijing-oss
+
+#seata配置
+seata:
+#  分组
+  tx-service-group: ${spring.application.name}-group
+  service:
+# seata地址，xdclass xdclass-user-service-group必须相同
+    grouplist:
+      xdclass: 127.0.0.1:8091
+    vgroup-mapping:
+#与上面的tx-service-group名一致
+      xdclass-user-service-group: xdclass
