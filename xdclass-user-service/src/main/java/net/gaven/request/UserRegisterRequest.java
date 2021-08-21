@@ -11,6 +11,7 @@ import lombok.Data;
 @Data
 public class UserRegisterRequest {
 
+    private Long id;
     @ApiModelProperty(value = "昵称", example = "Anna")
     private String name;
 

@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
+import net.gaven.feign.CouponFeignService;
 import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.UserMapper;
 import net.gaven.model.LoginUser;
 import net.gaven.model.UserDO;
+import net.gaven.request.NewUserCouponRequest;
 import net.gaven.request.UserLoginRequest;
 import net.gaven.request.UserRegisterRequest;
 import net.gaven.service.INotifyService;
@@ -20,6 +22,7 @@ import net.gaven.vo.UserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
@@ -38,6 +41,8 @@ public class UserServiceImpl implements IUserService {
     private INotifyService notifyService;
     @Resource
     private UserMapper userMapper;
+    @Autowired
+    private CouponFeignService couponFeignService;
 
 
     /**
@@ -50,6 +55,7 @@ public class UserServiceImpl implements IUserService {
      * @param userRegisterRequest
      * @return
      */
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public JsonData registerUser(UserRegisterRequest userRegisterRequest) {
         log.info("register user start");
@@ -65,13 +71,23 @@ public class UserServiceImpl implements IUserService {
         //账号唯一性检查(TODO)
         boolean checkUnion = checkUnion(userRegisterRequest.getMail());
         if (checkUnion) {
-            saveUserDO(userRegisterRequest);
+            UserDO userDO = saveUserDO(userRegisterRequest);
+            userRegisterRequest.setId(userDO.getId());
             //新注册用户福利发放(TODO)
+            addCoupon(userRegisterRequest);
             return JsonData.buildSuccess();
         } else {
             return JsonData.buildResult(BizCodeEnum.ACCOUNT_REPEAT);
         }
 
+    }
+
+    private void addCoupon(UserRegisterRequest userRegisterRequest) {
+        NewUserCouponRequest request = new NewUserCouponRequest();
+        request.setUserId(userRegisterRequest.getId());
+        request.setName(userRegisterRequest.getName());
+        JsonData newCoupon = couponFeignService.getNewCoupon(request);
+        log.info("获取优惠卷成功{},{}", newCoupon.toString());
     }
 
     /**
@@ -90,7 +106,7 @@ public class UserServiceImpl implements IUserService {
         return false;
     }
 
-    private void saveUserDO(UserRegisterRequest userRegisterRequest) {
+    private UserDO saveUserDO(UserRegisterRequest userRegisterRequest) {
         //密码加密（TODO）
         String salt = "$1$" + RandomUtil.getStringNumRandom(8);
         String cryptPwd = MD5Util.getCryptPwd(userRegisterRequest.getPwd(), salt);
@@ -103,7 +119,8 @@ public class UserServiceImpl implements IUserService {
         userDO.setSecret(salt);
         userDO.setPwd(cryptPwd);
         userDO.setHeadImg(userRegisterRequest.getHeadImg());
-        userMapper.insert(userDO);
+        int insert = userMapper.insert(userDO);
+        return userDO;
     }
 
     /**

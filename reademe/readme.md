@@ -163,6 +163,9 @@ springfox.documentation.service.response
 ```
 ##8用户注册
 ###8.1短信轰炸机
-![img.png](jpg/img.png)
+![img.png](../jpg/img.png)
 
 * OCR 识别 
+
+
+![img.png](img.png)
