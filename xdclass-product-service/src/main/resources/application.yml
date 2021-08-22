@@ -8,6 +8,18 @@ spring:
     nacos:
       discovery:
         server-addr: 123.57.32.9:8848
+  #消息队列
+  rabbitmq:
+    host: 123.57.32.9
+    port: 5672
+    virtual-host: /
+    password: password
+    username: admin
+    #开启⼿动确认消息
+    listener:
+      simple:
+        acknowledge-mode: manual
+
   redis:
     host: 123.57.32.9
     password: 123456
