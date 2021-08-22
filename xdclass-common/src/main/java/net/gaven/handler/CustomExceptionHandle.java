@@ -8,6 +8,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
+ * seata微服务框架必须捕获到异常才能使用，这里如果是统一处理了，其会认为没有出错
+ * 所以暂时注释调
+ * <p>
+ * 这里如何修改呢？？
+ * 通过code实现是否出错
+ * 服务发送端，通过接受端返回的状态码判断
  * @author: lee
  * @create: 2021/8/4 8:36 上午
  **/

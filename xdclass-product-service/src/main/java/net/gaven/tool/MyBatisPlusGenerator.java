@@ -33,16 +33,16 @@ public class MyBatisPlusGenerator {
                 // 设置生成的service接口的名字的首字母是否为I，默认Service是以I开头的
                 .setServiceName("%sService")
 
-        //实体类结尾名称
+                //实体类结尾名称
                 .setEntityName("%sDO")
 
-        //生成基本的resultMap
+                //生成基本的resultMap
                 .setBaseResultMap(true)
 
-        //不使用AR模式
+                //不使用AR模式
                 .setActiveRecord(false)
 
-        //生成基本的SQL片段
+                //生成基本的SQL片段
                 .setBaseColumnList(true);
 
         //2. 数据源配置
@@ -63,15 +63,16 @@ public class MyBatisPlusGenerator {
                 // 数据库表映射到实体的命名策略
                 .setNaming(NamingStrategy.underline_to_camel)
 
-        //使用lombok
+                //使用lombok
                 .setEntityLombokModel(true)
 
-        //使用restcontroller注解
+                //使用restcontroller注解
                 .setRestControllerStyle(true)
 
-        // 生成的表, 支持多表一起生成，以数组形式填写
-        //TODO  TODO  TODO  TODO
-                .setInclude("banner","product");
+                // 生成的表, 支持多表一起生成，以数组形式填写
+                //TODO  TODO  TODO  TODO
+//                .setInclude("banner","product");
+                .setInclude("product_task");
 
         //4. 包名策略配置
         PackageConfig pkConfig = new PackageConfig();

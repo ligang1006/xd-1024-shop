@@ -1,6 +1,7 @@
 package net.gaven.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.seata.spring.annotation.GlobalTransactional;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;
@@ -57,6 +58,7 @@ public class UserServiceImpl implements IUserService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
+//    @GlobalTransactional
     public JsonData registerUser(UserRegisterRequest userRegisterRequest) {
         log.info("register user start");
         if (userRegisterRequest == null) {
@@ -68,13 +70,15 @@ public class UserServiceImpl implements IUserService {
         if (!checkCode) {
             return JsonData.buildResult(BizCodeEnum.CODE_ERROR);
         }
-        //账号唯一性检查(TODO)
+        //账号唯一性检查
         boolean checkUnion = checkUnion(userRegisterRequest.getMail());
         if (checkUnion) {
             UserDO userDO = saveUserDO(userRegisterRequest);
             userRegisterRequest.setId(userDO.getId());
-            //新注册用户福利发放(TODO)
+            //新注册用户福利发放
             addCoupon(userRegisterRequest);
+            //TODO 这里是模拟出错，分布式事务回滚
+//            int i = 1 / 0;
             return JsonData.buildSuccess();
         } else {
             return JsonData.buildResult(BizCodeEnum.ACCOUNT_REPEAT);
@@ -87,6 +91,9 @@ public class UserServiceImpl implements IUserService {
         request.setUserId(userRegisterRequest.getId());
         request.setName(userRegisterRequest.getName());
         JsonData newCoupon = couponFeignService.getNewCoupon(request);
+        if (newCoupon.getCode() != 0) {
+            throw new RuntimeException("用户注册，发放优惠卷失败");
+        }
         log.info("获取优惠卷成功{},{}", newCoupon.toString());
     }
 

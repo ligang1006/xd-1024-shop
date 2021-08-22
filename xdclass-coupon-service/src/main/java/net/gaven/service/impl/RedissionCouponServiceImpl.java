@@ -223,6 +223,7 @@ public class RedissionCouponServiceImpl implements ICouponService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public JsonData getNewUserCoupon(NewUserCouponRequest request) {
         //查询新人的优惠卷
         List<CouponDO> initCoupons = initNewUserCoupon(request.getUserId(), CouponCategoryEnum.NEW_USER);
