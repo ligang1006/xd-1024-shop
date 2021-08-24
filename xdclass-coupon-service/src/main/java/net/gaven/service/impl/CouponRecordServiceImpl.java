@@ -4,18 +4,29 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.enums.BizCodeEnum;
+import net.gaven.enums.CouponPublishEnum;
+import net.gaven.enums.CouponStateEnum;
+import net.gaven.enums.CouponTaskStatusEnum;
+import net.gaven.exception.BizException;
 import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.CouponRecordMapper;
+import net.gaven.mapper.CouponTaskMapper;
 import net.gaven.model.CouponRecordDO;
+import net.gaven.model.CouponTaskDO;
 import net.gaven.model.LoginUser;
+import net.gaven.request.LockCouponRecordRequest;
 import net.gaven.service.ICouponRecordService;
+import net.gaven.util.JsonData;
 import net.gaven.vo.CouponRecordVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +41,8 @@ import java.util.stream.Collectors;
 public class CouponRecordServiceImpl implements ICouponRecordService {
     @Resource
     private CouponRecordMapper couponRecordMapper;
+    @Resource
+    private CouponTaskMapper taskMapper;
 
     @Override
     public Map<String, Object> page(Integer page, Integer size) {
@@ -70,5 +83,53 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
         CouponRecordVO recordVO = new CouponRecordVO();
         BeanUtils.copyProperties(couponRecordDO, recordVO);
         return recordVO;
+    }
+
+    /**
+     * 锁定优惠卷
+     * 订单号关联优惠卷
+     * * 1）锁定优惠券记录   在优惠卷记录表插入
+     * * 2）task表插入记录
+     * <p>
+     * `coupon_record_id` '优惠券记录id',
+     * `out_trade_no`'订单号',
+     * `lock_state` '锁定状态 锁定LOCK-完成FINISH 取消CANCEL',
+     * * 3）发送延迟消息
+     *
+     * @param recordRequest
+     * @return
+     */
+    @Override
+    public JsonData lockCouponRecords(LockCouponRecordRequest recordRequest) {
+        //锁定优惠券记录
+        List<Long> lockCouponRecordIds = recordRequest.getLockCouponRecordIds();
+        String orderNo = recordRequest.getOrderOutTradeNo();
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+
+        int recordRows = couponRecordMapper.lockUseStateBatch(loginUser.getId(),
+                CouponStateEnum.USED.name(), lockCouponRecordIds);
+
+        List<CouponTaskDO> taskDOList = lockCouponRecordIds.stream().map(
+                record -> getCouponTaskDO(record, orderNo)).collect(Collectors.toList());
+        //task表插入记录
+        int taskRows = taskMapper.insertBatch(taskDOList);
+        if (lockCouponRecordIds.size() == recordRows
+                && recordRows == taskRows) {
+            //发送延迟消息
+            return JsonData.buildSuccess();
+        } else {
+            throw new BizException(BizCodeEnum.COUPON_RECORD_LOCK_FAIL);
+        }
+
+    }
+
+    private CouponTaskDO getCouponTaskDO(Long recordId, String orderNo) {
+
+        CouponTaskDO couponTaskDO = new CouponTaskDO();
+        couponTaskDO.setCouponRecordId(recordId);
+        couponTaskDO.setCreateTime(new Date());
+        couponTaskDO.setOutTradeNo(orderNo);
+        couponTaskDO.setLockState(CouponTaskStatusEnum.LOCK.name());
+        return couponTaskDO;
     }
 }

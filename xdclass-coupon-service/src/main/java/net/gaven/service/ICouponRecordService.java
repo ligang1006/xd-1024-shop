@@ -1,5 +1,7 @@
 package net.gaven.service;
 
+import net.gaven.request.LockCouponRecordRequest;
+import net.gaven.util.JsonData;
 import net.gaven.vo.CouponRecordVO;
 
 import java.util.Map;
@@ -25,4 +27,12 @@ public interface ICouponRecordService {
      * @return
      */
     CouponRecordVO detail(Long recordId);
+    /**
+     * 锁定优惠券
+     *
+     * @param recordRequest
+     * @return
+     */
+    JsonData lockCouponRecords(LockCouponRecordRequest recordRequest);
+
 }

@@ -2,6 +2,9 @@ package net.gaven.mapper;
 
 import net.gaven.model.CouponTaskDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -12,5 +15,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @since 2021-08-22
  */
 public interface CouponTaskMapper extends BaseMapper<CouponTaskDO> {
+
+    /**
+     * 批量插入
+     * @param couponTaskDOList
+     * @return
+     */
+    int insertBatch(@Param("couponTaskList") List<CouponTaskDO> couponTaskDOList);
 
 }
