@@ -74,8 +74,8 @@ aliyun:
 #      xdclass-coupon-service-group: xdclass
 
 #⾃定义消息队列配置，发送锁定库存消息-》延迟
-  exchange-》lock.queue-》死信exchange-》
-  release.queue
+#  exchange-》lock.queue-》死信exchange-》
+#  release.queue
 mqconfig:
   #延迟队列，不能被监听消费
   coupon_release_delay_queue: coupon.release.delay.queue
