@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.config.RabbitMqConfig;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.CouponPublishEnum;
 import net.gaven.enums.CouponStateEnum;
@@ -13,12 +14,14 @@ import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.CouponRecordMapper;
 import net.gaven.mapper.CouponTaskMapper;
 import net.gaven.model.CouponRecordDO;
+import net.gaven.model.CouponRecordMessage;
 import net.gaven.model.CouponTaskDO;
 import net.gaven.model.LoginUser;
 import net.gaven.request.LockCouponRecordRequest;
 import net.gaven.service.ICouponRecordService;
 import net.gaven.util.JsonData;
 import net.gaven.vo.CouponRecordVO;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +46,10 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
     private CouponRecordMapper couponRecordMapper;
     @Resource
     private CouponTaskMapper taskMapper;
+    @Autowired
+    private RabbitMqConfig rabbitMqConfig;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     @Override
     public Map<String, Object> page(Integer page, Integer size) {
@@ -115,7 +122,16 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
         int taskRows = taskMapper.insertBatch(taskDOList);
         if (lockCouponRecordIds.size() == recordRows
                 && recordRows == taskRows) {
-            //发送延迟消息
+            //发送延迟消息,把task记录保存
+            for (CouponTaskDO task : taskDOList) {
+                CouponRecordMessage recordMessage = new CouponRecordMessage();
+                recordMessage.setOutTradeNo(task.getOutTradeNo());
+                recordMessage.setTaskId(task.getId());
+                log.info("rabbitMq send message start...");
+                rabbitTemplate.convertAndSend(rabbitMqConfig.getEventExchange(), rabbitMqConfig.getCouponReleaseDelayRoutingKey(), recordMessage);
+                log.info("rabbitMq send message{} end ", recordMessage);
+            }
+
             return JsonData.buildSuccess();
         } else {
             throw new BizException(BizCodeEnum.COUPON_RECORD_LOCK_FAIL);
