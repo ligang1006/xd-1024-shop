@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: xdclass-coupon-service
+    name: xdclass-order-service
   cloud:
     nacos:
       discovery:

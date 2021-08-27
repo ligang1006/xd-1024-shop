@@ -5,11 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.config.RabbitMqConfig;
-import net.gaven.enums.BizCodeEnum;
-import net.gaven.enums.CouponPublishEnum;
-import net.gaven.enums.CouponStateEnum;
-import net.gaven.enums.CouponTaskStatusEnum;
+import net.gaven.enums.*;
 import net.gaven.exception.BizException;
+import net.gaven.feign.ProductOrderFeignService;
 import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.CouponRecordMapper;
 import net.gaven.mapper.CouponTaskMapper;
@@ -50,6 +48,10 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
     private RabbitMqConfig rabbitMqConfig;
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private CouponTaskMapper couponTaskMapper;
+    @Autowired
+    private ProductOrderFeignService productOrderFeignService;
 
     @Override
     public Map<String, Object> page(Integer page, Integer size) {
@@ -148,4 +150,69 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
         couponTaskDO.setLockState(CouponTaskStatusEnum.LOCK.name());
         return couponTaskDO;
     }
+
+    /**
+     * *解锁优惠券记录
+     * * 1）查询task工作单是否存在
+     * * 2) 查询订单状态
+     * <p>
+     * 修改task表只有Lock状态才进行修改，可能存在重复的问题
+     * <p>
+     * 工作单的状态根据 订单状态改变
+     * 订单--->new     重新投递
+     * 订单--->cancel  释放优惠卷
+     * 订单--->PAY     标记优惠卷使用了
+     *
+     * @param recordMessage
+     * @return
+     */
+    @Override
+    public boolean releaseCouponRecord(CouponRecordMessage recordMessage) {
+        //查询task是否存在
+        CouponTaskDO couponTaskDO = couponTaskMapper.selectById(recordMessage.getTaskId());
+        if (couponTaskDO == null) {
+            log.warn("工作单不存，消息:{}", recordMessage);
+            return true;
+        }
+        //lock状态才处理
+        if (CouponTaskStatusEnum.LOCK.name().equals(couponTaskDO.getLockState())) {
+            //查询订单状态,支付了
+            JsonData status = productOrderFeignService.getOrderProductStatus(recordMessage.getOutTradeNo());
+            if (status.getCode().equals(0)) {
+                //订单--->new     重新投递
+                //订单--->cancel  释放优惠卷
+                //订单--->PAY     标记优惠卷使用了
+
+                if (status.getData().equals(ProductOrderStateEnum.NEW.name())) {
+                    //状态是NEW新建状态，则返回给消息队，列重新投递
+                    log.warn("订单状态是NEW,返回给消息队列，重新投递:{}", recordMessage);
+                    return false;
+                } else if (status.getData().equals(ProductOrderStateEnum.PAY.name())) {
+                    //状态是PAY建状态，返回
+                    log.info("订单已经支付，修改库存锁定工作单FINISH状态:{}", recordMessage);
+                    couponTaskDO.setLockState(CouponTaskStatusEnum.FINISH.name());
+                    couponTaskMapper.update(couponTaskDO, new QueryWrapper<CouponTaskDO>()
+                            .eq("id", recordMessage.getTaskId()));
+                    return true;
+                } else if (status.getData().equals(ProductOrderStateEnum.CANCEL.name())) {
+                    //状态是CANCEL建状态，返回
+                    couponTaskDO.setLockState(CouponTaskStatusEnum.CANCEL.name());
+                    couponTaskMapper.update(couponTaskDO, new QueryWrapper<CouponTaskDO>()
+                            .eq("id", recordMessage.getTaskId()));
+                    log.warn("订单状态是CANCEL,返回给消息队列，重新投递:{}", recordMessage);
+                    return true;
+                }
+            } else {
+                //查询订单状态失败
+                log.warn("工作单状态不是LOCK,state={},消息体={}", couponTaskDO.getLockState(), recordMessage);
+                return true;
+            }
+        } else {
+            log.warn("工作单状态不是LOCK,state={},消息体={}", couponTaskDO.getLockState(), recordMessage);
+            return true;
+        }
+        //查询订单状态，new
+        return false;
+    }
+
 }

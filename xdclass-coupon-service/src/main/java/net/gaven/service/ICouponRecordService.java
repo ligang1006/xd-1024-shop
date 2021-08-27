@@ -1,5 +1,6 @@
 package net.gaven.service;
 
+import net.gaven.model.CouponRecordMessage;
 import net.gaven.request.LockCouponRecordRequest;
 import net.gaven.util.JsonData;
 import net.gaven.vo.CouponRecordVO;
@@ -27,6 +28,7 @@ public interface ICouponRecordService {
      * @return
      */
     CouponRecordVO detail(Long recordId);
+
     /**
      * 锁定优惠券
      *
@@ -34,5 +36,13 @@ public interface ICouponRecordService {
      * @return
      */
     JsonData lockCouponRecords(LockCouponRecordRequest recordRequest);
+
+    /**
+     * 释放优惠卷
+     *
+     * @param recordMessage
+     * @return
+     */
+    boolean releaseCouponRecord(CouponRecordMessage recordMessage);
 
 }

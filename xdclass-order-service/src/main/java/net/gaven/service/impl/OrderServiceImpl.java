@@ -1,9 +1,13 @@
 package net.gaven.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.mapper.ProductOrderMapper;
+import net.gaven.model.ProductOrderDO;
 import net.gaven.service.IOrderService;
 import net.gaven.util.JsonData;
 import net.gaven.vo.ConfirmOrderRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,8 +45,23 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class OrderServiceImpl implements IOrderService {
+    @Autowired
+    private ProductOrderMapper productOrderMapper;
+
     @Override
     public JsonData confirmOrder(ConfirmOrderRequest orderRequest) {
         return null;
+    }
+
+    @Override
+    public String queryProductOrderState(String outTradeNo) {
+
+        ProductOrderDO productOrderDO = productOrderMapper
+                .selectOne(new QueryWrapper<ProductOrderDO>()
+                        .eq("out_trade_no", outTradeNo));
+        if (productOrderDO == null) {
+            return null;
+        }
+        return productOrderDO.getState();
     }
 }

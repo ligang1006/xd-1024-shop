@@ -14,4 +14,11 @@ public interface IOrderService {
      * @param orderRequest
      */
     JsonData confirmOrder(ConfirmOrderRequest orderRequest);
+
+    /**
+     *
+     * @param outTradeNo
+     * @return
+     */
+    String queryProductOrderState(String outTradeNo);
 }
