@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * <p>
- *  Mapper 接口
+ * Mapper 接口
  * </p>
  *
  * @author lee
@@ -16,7 +16,11 @@ import java.util.List;
  */
 public interface CouponRecordMapper extends BaseMapper<CouponRecordDO> {
     /**
+     * 批量锁定用户状态
      *
+     * @param userId
+     * @param useState
+     * @param lockCouponRecordIds
      * @return
      */
     int lockUseStateBatch(@Param("userId") Long userId, @Param("useState") String useState, @Param("lockCouponRecordIds") List<Long> lockCouponRecordIds);

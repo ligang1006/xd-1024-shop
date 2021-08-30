@@ -1,7 +1,7 @@
 package net.gaven.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.seata.spring.annotation.GlobalTransactional;
+
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.SendCodeEnum;

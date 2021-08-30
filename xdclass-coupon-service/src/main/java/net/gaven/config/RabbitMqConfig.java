@@ -48,8 +48,7 @@ public class RabbitMqConfig {
 //     * <p>
 //     * 即进⼊死信队列的路由key
 //     */
-//    @Value("${mqconfig.coupon_release_routing_key}"
-//    )
+//    @Value("${mqconfig.coupon_release_routing_key}")
 //    private String couponReleaseRoutingKey;
 //    /**
 //     * 过期时间
@@ -79,17 +78,18 @@ public class RabbitMqConfig {
 //        return new TopicExchange(eventExchange, true, false);
 //    }
 //
-//    @Bean
-//    public Queue couponReleaseDelayQueue() {
-//
-//        Map<String, Object> args = new HashMap<>(3);
+////    @Bean
+////    public Queue couponReleaseDelayQueue() {
+////
+////        Map<String, Object> args = new HashMap<>(3);
 ////        args.put("x-message-ttl", ttl);
-////        args.put("type", "java.lang.Long");
-//        args.put("x-dead-letter-routing-key", couponReleaseRoutingKey);
-//        args.put("x-dead-letter-exchange", eventExchange);
+//////        args.put("type", "java.lang.Long");
+////        args.put("x-dead-letter-routing-key", couponReleaseRoutingKey);
+////        args.put("x-dead-letter-exchange", eventExchange);
+////
+////        return new Queue(couponReleaseDelayQueue, true, false, false, args);
+////    }
 //
-//        return new Queue(couponReleaseDelayQueue, true, false, false, args);
-//    }
 //
 //    /**
 //     * 死信队列
@@ -110,17 +110,9 @@ public class RabbitMqConfig {
 //                Binding.DestinationType.QUEUE, eventExchange,
 //                couponReleaseDelayRoutingKey, null);
 //    }
-//
-//    /**
-//     * 死信队列绑定关系建立
-//     *
-//     * @return
-//     */
-//    @Bean
-//    public Binding couponReleaseBinding() {
-//
-//        return new Binding(couponReleaseQueue, Binding.DestinationType.QUEUE, eventExchange, couponReleaseRoutingKey, null);
-//    }
+
+
+
     /**
      * 交换机
      */
@@ -229,7 +221,5 @@ public class RabbitMqConfig {
 
         return new Binding(couponReleaseQueue,Binding.DestinationType.QUEUE,eventExchange,couponReleaseRoutingKey,null);
     }
-
-
 
 }
