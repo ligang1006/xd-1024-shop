@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.request.LockProductRequest;
 import net.gaven.service.IProductService;
 import net.gaven.util.JsonData;
 import net.gaven.vo.ProductVO;
@@ -42,6 +43,15 @@ public class ProductController {
                            @PathVariable("product_id") Long productId) {
         ProductVO productVO = productService.productDetail(productId);
         return productVO == null ? JsonData.buildResult(BizCodeEnum.PRODUCT_NOT_EXITS) : JsonData.buildSuccess(productVO);
+    }
+
+    @ApiOperation("锁定商品")
+    @GetMapping("/lock_product_stack")
+    public JsonData lockProductStack(@ApiParam("锁定商品信息")
+                                     @RequestParam("product_id") LockProductRequest lockProductRequest) {
+
+        JsonData jsonData = productService.lockProductStack(lockProductRequest);
+        return jsonData;
     }
 
 }

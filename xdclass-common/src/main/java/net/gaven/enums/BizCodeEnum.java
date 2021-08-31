@@ -98,8 +98,8 @@ public enum BizCodeEnum {
      * 商品相关
      */
     PRODUCT_NUM_NEGATIVE(700101, "商品不存在"),
-
-    PRODUCT_NOT_EXITS(700102, "商品数量不能为负数");
+    PRODUCT_NOT_EXITS(700102, "商品数量不能为负数"),
+    PRODUCT_LOCK_FAIL(700103, "商品锁定失败");
 
     @Getter
     private String message;

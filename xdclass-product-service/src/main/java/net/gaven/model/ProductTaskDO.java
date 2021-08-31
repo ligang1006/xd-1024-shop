@@ -32,7 +32,7 @@ public class ProductTaskDO implements Serializable {
     private Long productId;
 
     /**
-     * 购买数	ᰁ
+     * 购买数
      */
     private Integer buyNum;
 

@@ -1,6 +1,7 @@
 package net.gaven.service;
 
 import net.gaven.model.ProductDO;
+import net.gaven.request.LockProductRequest;
 import net.gaven.util.JsonData;
 import net.gaven.vo.ProductVO;
 
@@ -36,4 +37,13 @@ public interface IProductService {
      * @return
      */
     List<ProductVO> getAllProductById(List<Long> ids);
+
+    /**
+     * 锁定商品
+     *
+     * @param lockProductRequest
+     * @return
+     */
+    JsonData lockProductStack(LockProductRequest lockProductRequest);
+
 }
