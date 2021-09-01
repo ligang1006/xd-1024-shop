@@ -59,3 +59,18 @@ aliyun:
     access-key-id: LTAI5tFZxPyz7mbq4oRCbbmH
     access-key-secret: Wa3rWKyJBezZdmkz44kCagWQyFXAxU
     bucketname: lee-beijing-oss
+
+
+mqconfig:
+  #延迟队列，不能被监听消费
+  stock_release_delay_queue: stock.release.delay.queue
+  #延迟队列的消息过期后转发的队列
+  stock_release_queue: stock.release.queue
+  #交换机
+  stock_event_exchange: stock.event.exchange
+  #进⼊延迟队列的路由key
+  stock_release_delay_routing_key: stock.release.delay.routing.key
+  #消息过期，进⼊释放死信队列的key
+  stock_release_routing_key: stock.release.routing.key
+  #消息过期时间,毫秒,测试改为15秒
+  ttl: 15000
