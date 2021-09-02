@@ -177,7 +177,8 @@ springfox.documentation.service.response
 * 支付
   ![img_2.png](img_2.png)
 * 锁定商品和优惠券架构设置
-
+![img_6.png](img_6.png)
+  ![img_8.png](img_8.png)
 * 微信支付
 ![img_7.png](img_7.png)
   
