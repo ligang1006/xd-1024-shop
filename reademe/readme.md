@@ -164,9 +164,21 @@ springfox.documentation.service.response
 ##8用户注册
 ###8.1短信轰炸机
 ![img.png](../jpg/img.png)
-
+* ABA问题
+  ![img_5.png](img_5.png)
+* oss配置
+![img_4.png](img_4.png)
 * OCR 识别 
-
+* 分布式事务
+![img_3.png](img_3.png)
 
 ![img.png](img.png)
   ![img_1.png](img_1.png)
+* 支付
+  ![img_2.png](img_2.png)
+* 锁定商品和优惠券架构设置
+
+* 微信支付
+![img_7.png](img_7.png)
+  
+
