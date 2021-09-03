@@ -53,6 +53,7 @@ public class ProductStockMQListener {
         try {
             //释放优惠卷成功
             if (flag) {
+                log.error("释放商品库存成功 flag=false,{}", productMessage);
                 //确认消息消费成功，不进行入队
                 channel.basicAck(msgTag, false);
             } else {

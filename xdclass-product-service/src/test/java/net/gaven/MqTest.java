@@ -1,6 +1,7 @@
 package net.gaven;
 
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.model.ProductMessage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -25,6 +26,14 @@ public class MqTest {
             rabbitTemplate.convertAndSend("stock.event.exchange", "stock.release.delay.routing.key", "RssabbitMq test" + i);
 
         }
+
+    }@Test
+    public void productStockTest() {
+        ProductMessage productMessage=new ProductMessage();
+        productMessage.setOutTradeNo("123456abc");
+        productMessage.setTaskId(1L);
+        rabbitTemplate.convertAndSend("stock.event.exchange","stock.release.delay.routing.key",productMessage);
+
 
     }
 

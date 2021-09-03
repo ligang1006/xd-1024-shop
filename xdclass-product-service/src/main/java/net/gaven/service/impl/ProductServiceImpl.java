@@ -210,6 +210,7 @@ public class ProductServiceImpl implements IProductService {
             if (RequestStatusEnum.OK.getCode().equals(status.getCode())) {
                 if (ProductOrderStateEnum.PAY.name().equals(status.getData().toString())) {
                     //修改状态
+                    log.info("订单状态已经支付,消费成功:{}", productMessage);
                     taskDO.setLockState(ProductTaskStatusEnum.FINISH.name());
                     productTaskMapper.update(taskDO, new QueryWrapper<ProductTaskDO>().eq("id", taskDO.getId()));
                     return true;
