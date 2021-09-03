@@ -24,4 +24,13 @@ public interface CouponRecordMapper extends BaseMapper<CouponRecordDO> {
      * @return
      */
     int lockUseStateBatch(@Param("userId") Long userId, @Param("useState") String useState, @Param("lockCouponRecordIds") List<Long> lockCouponRecordIds);
+
+    /**
+     * 更新优惠券状态
+     *
+     * @param couponRecordId
+     * @param status
+     * @return 更新条数
+     */
+    int updateStatus(@Param("couponRecordId") Long couponRecordId, @Param("status") String status);
 }

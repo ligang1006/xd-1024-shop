@@ -188,31 +188,30 @@ public class CouponRecordServiceImpl implements ICouponRecordService {
                     log.warn("订单状态是NEW,返回给消息队列，重新投递:{}", recordMessage);
                     return false;
                 } else if (status.getData().equals(ProductOrderStateEnum.PAY.name())) {
-                    //状态是PAY建状态，返回
+                    //状态是PAY建状态，返回，这里优惠卷的状态肯定是在下单的时候修改的
                     log.info("订单已经支付，修改库存锁定工作单FINISH状态:{}", recordMessage);
                     couponTaskDO.setLockState(CouponTaskStatusEnum.FINISH.name());
                     couponTaskMapper.update(couponTaskDO, new QueryWrapper<CouponTaskDO>()
                             .eq("id", recordMessage.getTaskId()));
                     return true;
-                } else if (status.getData().equals(ProductOrderStateEnum.CANCEL.name())) {
-                    //状态是CANCEL建状态，返回
-                    couponTaskDO.setLockState(CouponTaskStatusEnum.CANCEL.name());
-                    couponTaskMapper.update(couponTaskDO, new QueryWrapper<CouponTaskDO>()
-                            .eq("id", recordMessage.getTaskId()));
-                    log.warn("订单状态是CANCEL,返回给消息队列，重新投递:{}", recordMessage);
-                    return true;
                 }
+                //状态是CANCEL建状态，返回
+                couponTaskDO.setLockState(CouponTaskStatusEnum.CANCEL.name());
+                couponTaskMapper.update(couponTaskDO, new QueryWrapper<CouponTaskDO>()
+                        .eq("id", recordMessage.getTaskId()));
+                //恢复优惠券记录是NEW状态
+                couponRecordMapper.updateStatus(couponTaskDO.getCouponRecordId(),CouponStateEnum.NEW.name());
+                log.warn("订单状态是CANCEL,返回给消息队列，重新投递:{}", recordMessage);
+                return true;
             } else {
                 //查询订单状态失败
-                log.warn("工作单状态不是LOCK,state={},消息体={}", couponTaskDO.getLockState(), recordMessage);
+                log.warn("查询工单状态失败,state={},消息体={}", couponTaskDO.getLockState(), recordMessage);
                 return true;
             }
         } else {
             log.warn("工作单状态不是LOCK,state={},消息体={}", couponTaskDO.getLockState(), recordMessage);
             return true;
         }
-        //查询订单状态，new
-        return false;
     }
 
 }

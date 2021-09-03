@@ -50,7 +50,7 @@ public class ProductController {
     public JsonData lockProductStack(@ApiParam("锁定商品信息")
                                      @RequestParam("product_id") LockProductRequest lockProductRequest) {
 
-        JsonData jsonData = productService.lockProductStack(lockProductRequest);
+        JsonData jsonData = productService.lockProductStock(lockProductRequest);
         return jsonData;
     }
 

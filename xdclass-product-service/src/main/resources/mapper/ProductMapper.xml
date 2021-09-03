@@ -26,5 +26,10 @@
         WHERE id = #{productId}
           AND stock - lock_stock >= #{buyNum};
     </update>
+    <update id="unlockProductStock">
+        UPDATE product
+        SET lock_stock=lock_stock - #{buyNum}
+        WHERE id = #{productId}
+    </update>
 
 </mapper>

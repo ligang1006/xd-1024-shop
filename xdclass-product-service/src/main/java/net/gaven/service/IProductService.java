@@ -1,6 +1,7 @@
 package net.gaven.service;
 
 import net.gaven.model.ProductDO;
+import net.gaven.model.ProductMessage;
 import net.gaven.request.LockProductRequest;
 import net.gaven.util.JsonData;
 import net.gaven.vo.ProductVO;
@@ -44,6 +45,13 @@ public interface IProductService {
      * @param lockProductRequest
      * @return
      */
-    JsonData lockProductStack(LockProductRequest lockProductRequest);
+    JsonData lockProductStock(LockProductRequest lockProductRequest);
 
+    /**
+     * 释放商品库存
+     *
+     * @param productMessage
+     * @return
+     */
+    boolean releaseProductStockRecord(ProductMessage productMessage);
 }
