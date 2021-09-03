@@ -1,6 +1,7 @@
 package net.gaven.util;
 
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * 获取随机数
@@ -9,6 +10,12 @@ import java.util.Random;
  * @create: 2021/8/5 1:56 下午
  **/
 public class RandomUtil {
+
+    public static String getRandomString() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
+
     /**
      * 获取指定长度的0-9随机数
      *

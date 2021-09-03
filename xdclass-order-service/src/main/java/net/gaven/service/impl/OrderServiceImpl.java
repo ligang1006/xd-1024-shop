@@ -1,14 +1,24 @@
 package net.gaven.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.enums.BizCodeEnum;
+import net.gaven.exception.BizException;
+import net.gaven.feign.UserFeignService;
+import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.ProductOrderMapper;
+import net.gaven.model.LoginUser;
 import net.gaven.model.ProductOrderDO;
 import net.gaven.service.IOrderService;
 import net.gaven.util.JsonData;
+import net.gaven.util.RandomUtil;
 import net.gaven.vo.ConfirmOrderRequest;
+import net.gaven.vo.ProductOrderAddressVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * 1、分两步实现
@@ -45,13 +55,42 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class OrderServiceImpl implements IOrderService {
-    @Autowired
+    @Resource
     private ProductOrderMapper productOrderMapper;
+    @Autowired
+    private UserFeignService userFeignService;
 
+    /**
+     * 确认订单
+     *
+     * @param orderRequest
+     * @return
+     */
     @Override
     public JsonData confirmOrder(ConfirmOrderRequest orderRequest) {
+        //获取用户
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        //订单号
+        String orderOutTranceNo = RandomUtil.getRandomString();
+        //
+        //获取收货地址详情
+        ProductOrderAddressVO addressVO = this.getUserAddress(orderRequest.getAddressId());
+        log.info("get user address detail {}", addressVO);
+
         return null;
     }
+
+    private ProductOrderAddressVO getUserAddress(long addressId) {
+        JsonData addressData = userFeignService.addressDetail(addressId);
+        if (addressData.getCode() != 0) {
+            log.error("获取收获地址失败,msg:{}", addressData);
+            throw new BizException(BizCodeEnum.ADDRESS_NO_EXITS);
+        }
+        ProductOrderAddressVO addressVO = addressData.getData(new TypeReference<ProductOrderAddressVO>() {
+        });
+        return addressVO;
+    }
+
 
     @Override
     public String queryProductOrderState(String outTradeNo) {
