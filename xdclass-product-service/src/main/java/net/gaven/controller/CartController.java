@@ -6,9 +6,12 @@ import io.swagger.annotations.ApiParam;
 import net.gaven.service.ICartService;
 import net.gaven.util.JsonData;
 import net.gaven.vo.CartItemRequest;
+import net.gaven.vo.CartItemVO;
 import net.gaven.vo.CartVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @author: lee
@@ -57,5 +60,13 @@ public class CartController {
                                @RequestBody CartItemRequest cartItemRequest) {
         cartService.changeMyCart(cartItemRequest);
         return JsonData.buildSuccess();
+    }
+
+    @ApiOperation("确认商品信息")
+    @PostMapping("/confirm_order_cart_items")
+    JsonData confirmProductItems(@ApiParam("商品ID列表")
+                                 @RequestBody List<Long> productIdsList) {
+        List<CartItemVO> cartItemVOS = cartService.confirmProductItems(productIdsList);
+        return JsonData.buildSuccess(cartItemVOS);
     }
 }

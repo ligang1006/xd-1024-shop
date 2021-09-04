@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.enums.RequestStatusEnum;
 import net.gaven.exception.BizException;
+import net.gaven.feign.ProductServiceFeign;
 import net.gaven.feign.UserFeignService;
 import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.ProductOrderMapper;
@@ -13,12 +15,14 @@ import net.gaven.model.ProductOrderDO;
 import net.gaven.service.IOrderService;
 import net.gaven.util.JsonData;
 import net.gaven.util.RandomUtil;
+import net.gaven.vo.OrderItemVO;
 import net.gaven.vo.ConfirmOrderRequest;
 import net.gaven.vo.ProductOrderAddressVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 1、分两步实现
@@ -59,6 +63,8 @@ public class OrderServiceImpl implements IOrderService {
     private ProductOrderMapper productOrderMapper;
     @Autowired
     private UserFeignService userFeignService;
+    @Autowired
+    private ProductServiceFeign productServiceFeign;
 
     /**
      * 确认订单
@@ -76,6 +82,14 @@ public class OrderServiceImpl implements IOrderService {
         //获取收货地址详情
         ProductOrderAddressVO addressVO = this.getUserAddress(orderRequest.getAddressId());
         log.info("get user address detail {}", addressVO);
+        //商品微服务-获取最新购物项和价格(购物车，需要删除商品)
+        List<Long> productIdList = orderRequest.getProductIdList();
+        JsonData jsonData = productServiceFeign.confirmProductItems(productIdList);
+        if (RequestStatusEnum.OK.getCode().equals(jsonData.getCode())) {
+            List<OrderItemVO> cartItemVOList = jsonData.getData(new TypeReference<List<OrderItemVO>>() {
+            });
+            log.info(" confirm product from cart info {}", cartItemVOList);
+        }
 
         return null;
     }

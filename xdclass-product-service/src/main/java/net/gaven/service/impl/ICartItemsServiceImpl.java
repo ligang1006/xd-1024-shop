@@ -9,6 +9,7 @@ import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.model.LoginUser;
 import net.gaven.service.ICartService;
 import net.gaven.service.IProductService;
+import net.gaven.util.JsonData;
 import net.gaven.vo.CartItemRequest;
 import net.gaven.vo.CartItemVO;
 import net.gaven.vo.CartVO;
@@ -216,5 +217,28 @@ public class ICartItemsServiceImpl implements ICartService {
         CartItemVO cartItemVO = JSON.parseObject(jsonItem, CartItemVO.class);
         cartItemVO.setBuyNum(buyNum);
         myCartOps.put(strProductId, JSON.toJSONString(cartItemVO));
+    }
+
+    /**
+     * 确认商品信息
+     *
+     * @param productIdsList
+     * @return
+     */
+    @Override
+    public List<CartItemVO> confirmProductItems(List<Long> productIdsList) {
+        //获取最新的商品价格
+        List<CartItemVO> cartItemVOList = buildCartItem(true);
+        //根据需要的商品id进行过滤，并清空对应的购物项
+        List<CartItemVO> filterItems = cartItemVOList.stream().filter(obj -> {
+            if (productIdsList.contains(obj.getProductId())) {
+                //从购物车中删除商品
+                this.deleteItem(obj.getProductId());
+                return true;
+            } else {
+                return false;
+            }
+        }).collect(Collectors.toList());
+        return filterItems;
     }
 }

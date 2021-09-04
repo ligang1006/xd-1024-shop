@@ -1,7 +1,11 @@
 package net.gaven.service;
 
+import net.gaven.util.JsonData;
 import net.gaven.vo.CartItemRequest;
+import net.gaven.vo.CartItemVO;
 import net.gaven.vo.CartVO;
+
+import java.util.List;
 
 /**
  * @author: lee
@@ -40,4 +44,13 @@ public interface ICartService {
      * @param cartItemRequest
      */
     void changeMyCart(CartItemRequest cartItemRequest);
+
+    /**
+     * 确认商品信息
+     *
+     * @param productIdsList
+     * @return
+     */
+    List<CartItemVO> confirmProductItems(List<Long> productIdsList);
+
 }
