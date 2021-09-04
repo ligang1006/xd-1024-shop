@@ -16,4 +16,8 @@ public class Constant {
      * 邮箱的内容
      */
     public static final String E_MAIL_CONTENT = "欢迎来到召唤师峡谷";
+    /**
+     * token
+     */
+    public static final String REQUEST_TOKEN = "token";
 }
