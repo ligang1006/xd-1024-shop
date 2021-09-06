@@ -4,24 +4,31 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.enums.CouponStateEnum;
 import net.gaven.enums.RequestStatusEnum;
 import net.gaven.exception.BizException;
-import net.gaven.feign.ProductServiceFeign;
+import net.gaven.feign.CouponFeignService;
+import net.gaven.feign.ProductFeignService;
 import net.gaven.feign.UserFeignService;
 import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.ProductOrderMapper;
 import net.gaven.model.LoginUser;
 import net.gaven.model.ProductOrderDO;
 import net.gaven.service.IOrderService;
+import net.gaven.util.CommonUtil;
 import net.gaven.util.JsonData;
 import net.gaven.util.RandomUtil;
+import net.gaven.vo.CouponRecordVO;
 import net.gaven.vo.OrderItemVO;
 import net.gaven.vo.ConfirmOrderRequest;
 import net.gaven.vo.ProductOrderAddressVO;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -64,7 +71,9 @@ public class OrderServiceImpl implements IOrderService {
     @Autowired
     private UserFeignService userFeignService;
     @Autowired
-    private ProductServiceFeign productServiceFeign;
+    private ProductFeignService productFeignService;
+    @Autowired
+    private CouponFeignService couponFeignService;
 
     /**
      * 确认订单
@@ -84,14 +93,72 @@ public class OrderServiceImpl implements IOrderService {
         log.info("get user address detail {}", addressVO);
         //商品微服务-获取最新购物项和价格(购物车，需要删除商品)
         List<Long> productIdList = orderRequest.getProductIdList();
-        JsonData jsonData = productServiceFeign.confirmProductItems(productIdList);
+        JsonData jsonData = productFeignService.confirmProductItems(productIdList);
         if (RequestStatusEnum.OK.getCode().equals(jsonData.getCode())) {
             List<OrderItemVO> cartItemVOList = jsonData.getData(new TypeReference<List<OrderItemVO>>() {
             });
             log.info(" confirm product from cart info {}", cartItemVOList);
+            if (cartItemVOList == null) {
+                //购物车商品不存在
+                throw new BizException(BizCodeEnum.ORDER_CONFIRM_CART_ITEM_NOT_EXIST);
+            }
         }
+        /*订单验价*/
+        Long couponRecordId = orderRequest.getCouponRecordId();
+        //获取优惠卷
+        CouponRecordVO cartCouponRecord = getCartCouponRecord(couponRecordId);
+
+
+        //获取总价格
+
 
         return null;
+    }
+
+    private CouponRecordVO getCartCouponRecord(Long couponRecordId) {
+        if (couponRecordId == null || couponRecordId < 0) {
+            return null;
+        }
+        JsonData detail = couponFeignService.detail(couponRecordId);
+
+        if (detail.getCode() != 0) {
+            throw new BizException(BizCodeEnum.ORDER_CONFIRM_COUPON_FAIL);
+        }
+
+        if (RequestStatusEnum.OK.getCode().equals(detail.getCode())) {
+            CouponRecordVO couponRecordVO = detail.getData(new TypeReference<CouponRecordVO>() {
+            });
+            if (couponRecordVO != null
+                    && couponAvailable(couponRecordVO)) {
+                return couponRecordVO;
+            } else {
+                log.warn("当前优惠卷不可用");
+                return null;
+            }
+
+        } else {
+            log.warn("未获取到获取优惠卷信息{}", couponRecordId);
+            return null;
+        }
+    }
+
+    /**
+     * 判断优惠券是否可用
+     *
+     * @param couponRecordVO
+     * @return
+     */
+    private boolean couponAvailable(CouponRecordVO couponRecordVO) {
+
+        if (couponRecordVO.getUseState().equalsIgnoreCase(CouponStateEnum.NEW.name())) {
+            long currentTimestamp = CommonUtil.getCurrentTimestamp();
+            long end = couponRecordVO.getEndTime().getTime();
+            long start = couponRecordVO.getStartTime().getTime();
+            if (currentTimestamp >= start && currentTimestamp <= end) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private ProductOrderAddressVO getUserAddress(long addressId) {

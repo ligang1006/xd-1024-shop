@@ -233,6 +233,7 @@ public class ICartItemsServiceImpl implements ICartService {
         List<CartItemVO> filterItems = cartItemVOList.stream().filter(obj -> {
             if (productIdsList.contains(obj.getProductId())) {
                 //从购物车中删除商品
+                //TODO 存在下单失败的情况，这时不应该清空购物车的商品
                 this.deleteItem(obj.getProductId());
                 return true;
             } else {

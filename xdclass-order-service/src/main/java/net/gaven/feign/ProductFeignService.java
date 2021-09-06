@@ -12,7 +12,7 @@ import java.util.List;
  * @create: 2021/9/4 3:01 下午
  **/
 @FeignClient("xdclass-product-service")
-public interface ProductServiceFeign {
+public interface ProductFeignService {
     /**
      * 确认商品信息
      *

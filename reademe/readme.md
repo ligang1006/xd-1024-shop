@@ -182,4 +182,5 @@ springfox.documentation.service.response
 * 微信支付
 ![img_7.png](img_7.png)
   
-
+* 订单失败，购物车进行回滚
+![img_10.png](img_10.png)
