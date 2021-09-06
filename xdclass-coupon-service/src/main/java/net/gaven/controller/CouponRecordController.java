@@ -5,6 +5,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import net.gaven.enums.BizCodeEnum;
+import net.gaven.request.LockCouponRecordRequest;
 import net.gaven.service.ICouponRecordService;
 import net.gaven.util.JsonData;
 import net.gaven.vo.CouponRecordVO;
@@ -45,6 +46,14 @@ public class CouponRecordController {
         return recordVO == null
                 ? JsonData.buildResult(BizCodeEnum.COUPON_NO_EXITS)
                 : JsonData.buildSuccess(recordVO);
+    }
+
+    @ApiOperation("锁定优惠卷")
+    @GetMapping("/lock_coupon")
+    public JsonData lockCoupon(@ApiParam("锁定优惠卷")
+                               @RequestBody LockCouponRecordRequest lockCouponRecordRequest) {
+        JsonData jsonData = recordService.lockCouponRecords(lockCouponRecordRequest);
+        return jsonData;
     }
 }
 

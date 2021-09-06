@@ -3,6 +3,7 @@ package net.gaven.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.config.RabbitMqConfig;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.CouponStateEnum;
 import net.gaven.enums.RequestStatusEnum;
@@ -14,6 +15,9 @@ import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.ProductOrderMapper;
 import net.gaven.model.LoginUser;
 import net.gaven.model.ProductOrderDO;
+import net.gaven.request.LockCouponRecordRequest;
+import net.gaven.request.LockProductRequest;
+import net.gaven.request.OrderItemRequest;
 import net.gaven.service.IOrderService;
 import net.gaven.util.CommonUtil;
 import net.gaven.util.JsonData;
@@ -22,14 +26,15 @@ import net.gaven.vo.CouponRecordVO;
 import net.gaven.vo.OrderItemVO;
 import net.gaven.vo.ConfirmOrderRequest;
 import net.gaven.vo.ProductOrderAddressVO;
-import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
-import java.util.Date;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 1、分两步实现
@@ -74,6 +79,10 @@ public class OrderServiceImpl implements IOrderService {
     private ProductFeignService productFeignService;
     @Autowired
     private CouponFeignService couponFeignService;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private RabbitMqConfig rabbitMqConfig;
 
     /**
      * 确认订单
@@ -86,7 +95,8 @@ public class OrderServiceImpl implements IOrderService {
         //获取用户
         LoginUser loginUser = LoginInterceptor.threadLocal.get();
         //订单号
-        String orderOutTranceNo = RandomUtil.getRandomString();
+        String orderOutTradeNo = RandomUtil.getRandomString();
+        List<OrderItemVO> cartItemVOList = null;
         //
         //获取收货地址详情
         ProductOrderAddressVO addressVO = this.getUserAddress(orderRequest.getAddressId());
@@ -95,7 +105,7 @@ public class OrderServiceImpl implements IOrderService {
         List<Long> productIdList = orderRequest.getProductIdList();
         JsonData jsonData = productFeignService.confirmProductItems(productIdList);
         if (RequestStatusEnum.OK.getCode().equals(jsonData.getCode())) {
-            List<OrderItemVO> cartItemVOList = jsonData.getData(new TypeReference<List<OrderItemVO>>() {
+            cartItemVOList = jsonData.getData(new TypeReference<List<OrderItemVO>>() {
             });
             log.info(" confirm product from cart info {}", cartItemVOList);
             if (cartItemVOList == null) {
@@ -104,15 +114,84 @@ public class OrderServiceImpl implements IOrderService {
             }
         }
         /*订单验价*/
-        Long couponRecordId = orderRequest.getCouponRecordId();
-        //获取优惠卷
-        CouponRecordVO cartCouponRecord = getCartCouponRecord(couponRecordId);
-
-
-        //获取总价格
+        this.checkPrice(cartItemVOList, orderRequest);
+        //锁定优惠券
+        this.lockCouponRecords(orderRequest, orderOutTradeNo);
+        //锁定库存
+        this.lockProductStocks(cartItemVOList, orderOutTradeNo);
 
 
         return null;
+    }
+
+    private void lockProductStocks(List<OrderItemVO> productIdList, String orderOutTradeNo) {
+        List<OrderItemRequest> products = productIdList.stream().map(product -> {
+            OrderItemRequest item = new OrderItemRequest();
+            item.setProductId(product.getProductId());
+            item.setBuyNum(product.getBuyNum());
+            return item;
+        }).collect(Collectors.toList());
+        LockProductRequest productRequest = new LockProductRequest();
+        productRequest.setOrderOutTradeNo(orderOutTradeNo);
+        productRequest.setOrderItemList(products);
+        JsonData jsonData = productFeignService.lockProductStack(productRequest);
+        if (jsonData.getCode().equals(RequestStatusEnum.OK.getCode())) {
+            log.error("锁定商品库存失败：{}", productIdList);
+            throw new BizException(BizCodeEnum.PRODUCT_LOCK_FAIL);
+        }
+    }
+
+    private void lockCouponRecords(ConfirmOrderRequest orderRequest, String orderOutTradeNo) {
+        if (orderRequest.getCouponRecordId() > 0) {
+            List<Long> couponRecordIds = new ArrayList<>();
+            couponRecordIds.add(orderRequest.getCouponRecordId());
+            LockCouponRecordRequest lockCouponRecordRequest = new LockCouponRecordRequest();
+            lockCouponRecordRequest.setOrderOutTradeNo(orderOutTradeNo);
+            lockCouponRecordRequest.setLockCouponRecordIds(couponRecordIds);
+            //锁定优惠卷
+            JsonData lockCouponRecords = couponFeignService.lockCouponRecords(lockCouponRecordRequest);
+            if (!RequestStatusEnum.OK.getCode().equals(lockCouponRecords.getCode())) {
+                throw new BizException(BizCodeEnum.COUPON_RECORD_LOCK_FAIL);
+            }
+//        //mq发送优惠卷的锁定
+//        rabbitTemplate.convertAndSend(rabbitMqConfig.getEventExchange(), rabbitMqConfig.getCouponReleaseDelayRoutingKey(), lockCouponRecordRequest);
+        }
+    }
+
+    /**
+     * 验证价格 计算购物车价格，是否满足优惠券满减条件
+     * * 1）统计全部商品的价格
+     * * 2) 获取优惠券(判断是否满足优惠券的条件)，总价再减去优惠券的价格 就是 最终的价格
+     *
+     * @param cartItemVOList
+     * @param orderRequest
+     */
+    private void checkPrice(List<OrderItemVO> cartItemVOList, ConfirmOrderRequest orderRequest) {
+        //统计商品总价格
+        BigDecimal realPayAmount = new BigDecimal("0");
+
+        Long couponRecordId = orderRequest.getCouponRecordId();
+        //获取优惠卷
+        CouponRecordVO cartCouponRecord = getCartCouponRecord(couponRecordId);
+        /*计算实际的价格，
+        Case1：使用优惠卷
+        Case2:没有使用优惠卷*/
+        for (OrderItemVO itemVO : cartItemVOList) {
+            realPayAmount.add(itemVO.getTotalAmount());
+        }
+        if (cartCouponRecord == null) {
+            //优惠卷>商品值
+        } else if (cartCouponRecord.getPrice().compareTo(realPayAmount) > 0) {
+            realPayAmount = BigDecimal.ZERO;
+        } else {
+            //商品-优惠卷价格
+            realPayAmount.divide(cartCouponRecord.getPrice());
+        }
+
+        //把最新获取的价格-前端传的总价=0 ？：
+        if (orderRequest.getRealPayAmount().compareTo(realPayAmount) != 0) {
+            throw new BizException(BizCodeEnum.ORDER_CONFIRM_PRICE_FAIL);
+        }
     }
 
     private CouponRecordVO getCartCouponRecord(Long couponRecordId) {
