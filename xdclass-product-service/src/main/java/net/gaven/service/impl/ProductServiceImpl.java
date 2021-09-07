@@ -126,7 +126,7 @@ public class ProductServiceImpl implements IProductService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public JsonData lockProductStock(LockProductRequest lockProductRequest) {
+    public JsonData  lockProductStock(LockProductRequest lockProductRequest) {
         //批量查询商品
         List<OrderItemRequest> orderItemList = lockProductRequest.getOrderItemList();
         if (CollectionUtils.isEmpty(orderItemList)) {

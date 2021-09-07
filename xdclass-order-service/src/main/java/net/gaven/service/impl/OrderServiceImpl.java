@@ -119,6 +119,8 @@ public class OrderServiceImpl implements IOrderService {
         this.lockCouponRecords(orderRequest, orderOutTradeNo);
         //锁定库存
         this.lockProductStocks(cartItemVOList, orderOutTradeNo);
+        //定时关单
+        //支付
 
 
         return null;

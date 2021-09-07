@@ -25,37 +25,37 @@ public class RabbitMqConfig {
     /**
      * 交换机
      */
-    @Value("${mqconfig.coupon_event_exchange}")
+    @Value("${mqconfig.order_event_exchange}")
     private String eventExchange;
 
 
     /**
      * 第一个队列  延迟队列，
      */
-    @Value("${mqconfig.coupon_release_delay_queue}")
-    private String couponReleaseDelayQueue;
+    @Value("${mqconfig.order_close_delay_queue}")
+    private String orderCloseDelayQueue;
 
     /**
      * 第一个队列的路由key
      * 进入队列的路由key
      */
-    @Value("${mqconfig.coupon_release_delay_routing_key}")
-    private String couponReleaseDelayRoutingKey;
+    @Value("${mqconfig.order_close_delay_routing_key}")
+    private String orderCloseDelayRoutingKey;
 
 
     /**
      * 第二个队列，被监听恢复库存的队列
      */
-    @Value("${mqconfig.coupon_release_queue}")
-    private String couponReleaseQueue;
+    @Value("${mqconfig.order_close_queue}")
+    private String orderCloseQueue;
 
     /**
      * 第二个队列的路由key
      * <p>
      * 即进入死信队列的路由key
      */
-    @Value("${mqconfig.coupon_release_routing_key}")
-    private String couponReleaseRoutingKey;
+    @Value("${mqconfig.order_close_routing_key}")
+    private String orderCloseRoutingKey;
 
     /**
      * 过期时间
@@ -91,14 +91,14 @@ public class RabbitMqConfig {
      * 延迟队列
      */
     @Bean
-    public Queue couponReleaseDelayQueue() {
+    public Queue orderCloseDelayQueue() {
 
         Map<String, Object> args = new HashMap<>(3);
         args.put("x-message-ttl", ttl);
-        args.put("x-dead-letter-routing-key", couponReleaseRoutingKey);
+        args.put("x-dead-letter-routing-key", orderCloseRoutingKey);
         args.put("x-dead-letter-exchange", eventExchange);
 
-        return new Queue(couponReleaseDelayQueue, true, false, false, args);
+        return new Queue(orderCloseDelayQueue, true, false, false, args);
     }
 
 
@@ -108,7 +108,7 @@ public class RabbitMqConfig {
     @Bean
     public Queue couponReleaseQueue() {
 
-        return new Queue(couponReleaseQueue, true, false, false);
+        return new Queue(orderCloseQueue, true, false, false);
 
     }
 
@@ -121,7 +121,7 @@ public class RabbitMqConfig {
     @Bean
     public Binding couponReleaseDelayBinding() {
 
-        return new Binding(couponReleaseDelayQueue, Binding.DestinationType.QUEUE, eventExchange, couponReleaseDelayRoutingKey, null);
+        return new Binding(orderCloseDelayQueue, Binding.DestinationType.QUEUE, eventExchange, orderCloseDelayRoutingKey, null);
     }
 
     /**
@@ -132,7 +132,7 @@ public class RabbitMqConfig {
     @Bean
     public Binding couponReleaseBinding() {
 
-        return new Binding(couponReleaseQueue, Binding.DestinationType.QUEUE, eventExchange, couponReleaseRoutingKey, null);
+        return new Binding(orderCloseQueue, Binding.DestinationType.QUEUE, eventExchange, orderCloseRoutingKey, null);
     }
 
 }
