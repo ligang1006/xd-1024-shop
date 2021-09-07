@@ -33,7 +33,7 @@ public interface ProductFeignService {
      * @param lockProductRequest
      * @return
      */
-    @PostMapping("/api/product/v1/lock_product_stack")
+    @PostMapping("/api/product/v1/lock_records")
     JsonData lockProductStack(@RequestBody LockProductRequest lockProductRequest);
 
 }

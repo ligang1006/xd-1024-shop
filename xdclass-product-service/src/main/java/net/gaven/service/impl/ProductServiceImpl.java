@@ -141,7 +141,7 @@ public class ProductServiceImpl implements IProductService {
         String orderOutTradeNo = lockProductRequest.getOrderOutTradeNo();
 
         //更新商品状态
-        updateProductTask(productsInfo, orderOutTradeNo, orderItemList);
+         updateProductTask(productsInfo, orderOutTradeNo, orderItemList);
 
 
         return JsonData.buildSuccess();

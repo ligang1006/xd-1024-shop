@@ -54,5 +54,29 @@ public class ProductController {
         return jsonData;
     }
 
+    /**
+     * 商品库存锁定
+     *
+     * @return
+     */
+    @ApiOperation("商品库存锁定")
+    @PostMapping("lock_products")
+    public JsonData lockProducts(@ApiParam("商品库存锁定") @RequestBody LockProductRequest lockProductRequest) {
+
+
+        JsonData jsonData = productService.lockProductStock(lockProductRequest);
+
+        return jsonData;
+    }
+
+
+    @ApiOperation("锁定商品库存")
+    @PostMapping("/lock_records")
+    public JsonData lockProductRecords(@ApiParam("锁定的商品信息")
+                                       @RequestBody LockProductRequest lockProductRequest) {
+
+        JsonData jsonData = productService.lockProductStock(lockProductRequest);
+        return jsonData;
+    }
 }
 
