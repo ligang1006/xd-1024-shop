@@ -179,8 +179,9 @@ springfox.documentation.service.response
 * 锁定商品和优惠券架构设置
 ![img_6.png](img_6.png)
   ![img_8.png](img_8.png)
-* 微信支付
+* 微信支付  
 ![img_7.png](img_7.png)
   
 * 订单失败，购物车进行回滚
 ![img_10.png](img_10.png)
+  ss

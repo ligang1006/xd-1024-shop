@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.gaven.config.RabbitMqConfig;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.enums.CouponStateEnum;
+import net.gaven.enums.ProductOrderStateEnum;
 import net.gaven.enums.RequestStatusEnum;
 import net.gaven.exception.BizException;
 import net.gaven.feign.CouponFeignService;
@@ -15,6 +16,7 @@ import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.mapper.ProductOrderMapper;
 import net.gaven.model.LoginUser;
 import net.gaven.model.ProductOrderDO;
+import net.gaven.model.message.OrderMessage;
 import net.gaven.request.LockCouponRecordRequest;
 import net.gaven.request.LockProductRequest;
 import net.gaven.request.OrderItemRequest;
@@ -26,6 +28,7 @@ import net.gaven.vo.CouponRecordVO;
 import net.gaven.vo.OrderItemVO;
 import net.gaven.vo.ConfirmOrderRequest;
 import net.gaven.vo.ProductOrderAddressVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -120,10 +123,18 @@ public class OrderServiceImpl implements IOrderService {
         //锁定库存
         this.lockProductStocks(cartItemVOList, orderOutTradeNo);
         //定时关单
+        sendOrderMessage(orderOutTradeNo);
         //支付
 
 
         return null;
+    }
+
+    private void sendOrderMessage(String orderOutTradeNo) {
+        OrderMessage orderMessage = new OrderMessage();
+        orderMessage.setOutTradeNo(orderOutTradeNo);
+        rabbitTemplate.convertAndSend(rabbitMqConfig.getEventExchange(),
+                rabbitMqConfig.getOrderCloseDelayRoutingKey(), orderMessage);
     }
 
     private void lockProductStocks(List<OrderItemVO> productIdList, String orderOutTradeNo) {
@@ -264,5 +275,57 @@ public class OrderServiceImpl implements IOrderService {
             return null;
         }
         return productOrderDO.getState();
+    }
+
+    /**
+     * 关单服务
+     * 查询是否能关闭订单
+     * <p>
+     * 在关闭订单之前，需要到第三方查询当前的订单状态
+     * 先到本地数据库查询订单的状态
+     *
+     * @param orderMessage
+     * @return
+     */
+    @Override
+    public Boolean closeProductOrder(OrderMessage orderMessage) {
+        log.info("start close order the orderNo is{}", orderMessage.getOutTradeNo());
+        String outTradeNo = orderMessage.getOutTradeNo();
+        ProductOrderDO productOrderDO = productOrderMapper.selectOne(new QueryWrapper<ProductOrderDO>().eq("out_trade_no", outTradeNo));
+        //订单不存在，直接关单
+        if (productOrderDO == null) {
+            log.warn("this order not exist {}", outTradeNo);
+            return true;
+        }
+        //查询订单状态
+        String state = productOrderDO.getState();
+        if (ProductOrderStateEnum.PAY.name().equalsIgnoreCase(state)) {
+            log.info("this order is pay{}", orderMessage.getOutTradeNo());
+            return true;
+        }
+
+
+        //向第三方支付查询订单是否真的未支付  TODO
+
+
+
+
+        String payResult = "";
+        //支付，return true 关单 修改订单状态
+        // 未支付，到第三方查询订单状态
+        //第三方 未支付--->true
+
+        //未支付成功
+        if (StringUtils.isBlank(payResult)){
+            productOrderMapper.updateOrderPayState(ProductOrderStateEnum.CANCEL.name(),ProductOrderStateEnum.NEW.name(),outTradeNo);
+            log.info("结果为空，则未支付成功，本地取消订单:{}",orderMessage);
+            return true;
+        }else {
+         //支付成功，主动的把订单状态改成UI就支付，造成该原因的情况可能是支付通道回调有问题
+            productOrderMapper.updateOrderPayState(ProductOrderStateEnum.PAY.name(),ProductOrderStateEnum.NEW.name(),outTradeNo);
+            log.info("支付成功，主动的把订单状态改成UI就支付，造成该原因的情况可能是支付通道回调有问题:{}",orderMessage);
+            return true;
+        }
+
     }
 }
