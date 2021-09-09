@@ -21,6 +21,9 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 
 /**
+ *
+ * 主要是通过上下文实现的
+ *
  * @author: lee
  * @create: 2021/9/8 5:08 下午
  **/
