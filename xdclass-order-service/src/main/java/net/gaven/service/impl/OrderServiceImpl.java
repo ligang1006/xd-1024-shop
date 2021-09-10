@@ -187,6 +187,7 @@ public class OrderServiceImpl implements IOrderService {
         productOrderDO.setTotalAmount(orderRequest.getTotalAmount());
         productOrderDO.setState(ProductOrderStateEnum.NEW.name());
         ProductOrderTypeEnum.valueOf(orderRequest.getPayType()).name();
+        productOrderDO.setOrderType(ProductOrderTypeEnum.DAILY.name());
         productOrderDO.setPayType(ProductOrderPayTypeEnum.valueOf(orderRequest.getPayType()).name());
 
         productOrderDO.setReceiverAddress(JSON.toJSONString(addressVO));
