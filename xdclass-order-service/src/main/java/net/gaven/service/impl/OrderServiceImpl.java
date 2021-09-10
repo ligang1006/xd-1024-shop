@@ -1,5 +1,6 @@
 package net.gaven.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +11,11 @@ import net.gaven.feign.CouponFeignService;
 import net.gaven.feign.ProductFeignService;
 import net.gaven.feign.UserFeignService;
 import net.gaven.interceptor.LoginInterceptor;
+import net.gaven.mapper.ProductOrderItemMapper;
 import net.gaven.mapper.ProductOrderMapper;
 import net.gaven.model.LoginUser;
 import net.gaven.model.ProductOrderDO;
+import net.gaven.model.ProductOrderItemDO;
 import net.gaven.model.message.OrderMessage;
 import net.gaven.request.LockCouponRecordRequest;
 import net.gaven.request.LockProductRequest;
@@ -33,6 +36,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -84,6 +88,8 @@ public class OrderServiceImpl implements IOrderService {
     private RabbitTemplate rabbitTemplate;
     @Autowired
     private RabbitMqConfig rabbitMqConfig;
+    @Autowired
+    private ProductOrderItemMapper orderItemMapper;
 
     /**
      * 确认订单
@@ -120,12 +126,74 @@ public class OrderServiceImpl implements IOrderService {
         this.lockCouponRecords(orderRequest, orderOutTradeNo);
         //锁定库存
         this.lockProductStocks(cartItemVOList, orderOutTradeNo);
+
+        //创建订单
+        ProductOrderDO productOrderDO = this.saveProductOrder(orderRequest, loginUser, orderOutTradeNo, addressVO);
+
+        //创建订单项
+        this.saveProductOrderItems(orderOutTradeNo, productOrderDO.getId(), cartItemVOList);
+
         //定时关单
         sendOrderMessage(orderOutTradeNo);
         //支付
 
 
         return null;
+    }
+
+    private void saveProductOrderItems(String orderOutTradeNo, Long orderId, List<OrderItemVO> orderItemList) {
+
+        List<ProductOrderItemDO> list = orderItemList.stream().map(
+                obj -> {
+                    ProductOrderItemDO itemDO = new ProductOrderItemDO();
+                    itemDO.setBuyNum(obj.getBuyNum());
+                    itemDO.setProductId(obj.getProductId());
+                    itemDO.setProductImg(obj.getProductImg());
+                    itemDO.setProductName(obj.getProductTitle());
+
+                    itemDO.setOutTradeNo(orderOutTradeNo);
+                    itemDO.setCreateTime(new Date());
+
+                    //单价
+                    itemDO.setAmount(obj.getAmount());
+                    //总价
+                    itemDO.setTotalAmount(obj.getTotalAmount());
+                    itemDO.setProductOrderId(orderId);
+                    return itemDO;
+                }
+        ).collect(Collectors.toList());
+        orderItemMapper.insertBatch(list);
+
+    }
+
+    private ProductOrderDO saveProductOrder(
+            ConfirmOrderRequest orderRequest, LoginUser loginUser,
+            String orderOutTradeNo, ProductOrderAddressVO addressVO) {
+
+        ProductOrderDO productOrderDO = new ProductOrderDO();
+        productOrderDO.setUserId(loginUser.getId());
+        productOrderDO.setHeadImg(loginUser.getHeadImg());
+        productOrderDO.setNickname(loginUser.getName());
+
+        productOrderDO.setOutTradeNo(orderOutTradeNo);
+        productOrderDO.setCreateTime(new Date());
+        productOrderDO.setDel(0);
+        productOrderDO.setOrderType(ProductOrderTypeEnum.DAILY.name());
+
+        //实际支付的价格
+        productOrderDO.setPayAmount(orderRequest.getRealPayAmount());
+
+        //总价，未使用优惠券的价格
+        productOrderDO.setTotalAmount(orderRequest.getTotalAmount());
+        productOrderDO.setState(ProductOrderStateEnum.NEW.name());
+        ProductOrderTypeEnum.valueOf(orderRequest.getPayType()).name();
+        productOrderDO.setPayType(ProductOrderPayTypeEnum.valueOf(orderRequest.getPayType()).name());
+
+        productOrderDO.setReceiverAddress(JSON.toJSONString(addressVO));
+
+        productOrderMapper.insert(productOrderDO);
+
+        return productOrderDO;
     }
 
     private void sendOrderMessage(String orderOutTradeNo) {
