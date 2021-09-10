@@ -79,6 +79,7 @@ public enum BizCodeEnum {
     PAY_ORDER_NOT_EXIST(300005, "订单不存在"),
     PAY_ORDER_STATE_ERROR(300006, "订单状态不正常"),
     PAY_ORDER_PAY_TIMEOUT(300007, "订单支付超时"),
+    PAY_ORDER_UPDATE_FAIL(300008, "订单回调更新订单状态失败"),
 
 
     /**

@@ -20,4 +20,13 @@ public class Constant {
      * token
      */
     public static final String REQUEST_TOKEN = "token";
+    /**
+     * 阿里支付回调成功返回
+     */
+    public static final String ALIPAY_SUCCESS = "success";
+    /**
+     * 阿里支付失败回调返回
+     */
+    public static final String ALIPAY_FAIL = "failure";
+
 }

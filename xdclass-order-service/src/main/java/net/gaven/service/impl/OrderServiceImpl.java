@@ -4,10 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.config.RabbitMqConfig;
-import net.gaven.enums.BizCodeEnum;
-import net.gaven.enums.CouponStateEnum;
-import net.gaven.enums.ProductOrderStateEnum;
-import net.gaven.enums.RequestStatusEnum;
+import net.gaven.enums.*;
 import net.gaven.exception.BizException;
 import net.gaven.feign.CouponFeignService;
 import net.gaven.feign.ProductFeignService;
@@ -37,6 +34,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -308,24 +306,52 @@ public class OrderServiceImpl implements IOrderService {
         //向第三方支付查询订单是否真的未支付  TODO
 
 
-
-
         String payResult = "";
         //支付，return true 关单 修改订单状态
         // 未支付，到第三方查询订单状态
         //第三方 未支付--->true
 
         //未支付成功
-        if (StringUtils.isBlank(payResult)){
-            productOrderMapper.updateOrderPayState(ProductOrderStateEnum.CANCEL.name(),ProductOrderStateEnum.NEW.name(),outTradeNo);
-            log.info("结果为空，则未支付成功，本地取消订单:{}",orderMessage);
+        if (StringUtils.isBlank(payResult)) {
+            productOrderMapper.updateOrderPayState(ProductOrderStateEnum.CANCEL.name(), ProductOrderStateEnum.NEW.name(), outTradeNo);
+            log.info("结果为空，则未支付成功，本地取消订单:{}", orderMessage);
             return true;
-        }else {
-         //支付成功，主动的把订单状态改成UI就支付，造成该原因的情况可能是支付通道回调有问题
-            productOrderMapper.updateOrderPayState(ProductOrderStateEnum.PAY.name(),ProductOrderStateEnum.NEW.name(),outTradeNo);
-            log.info("支付成功，主动的把订单状态改成UI就支付，造成该原因的情况可能是支付通道回调有问题:{}",orderMessage);
+        } else {
+            //支付成功，主动的把订单状态改成UI就支付，造成该原因的情况可能是支付通道回调有问题
+            productOrderMapper.updateOrderPayState(ProductOrderStateEnum.PAY.name(), ProductOrderStateEnum.NEW.name(), outTradeNo);
+            log.info("支付成功，主动的把订单状态改成UI就支付，造成该原因的情况可能是支付通道回调有问题:{}", orderMessage);
             return true;
         }
 
+    }
+
+    /**
+     * 处理第三方回调的结果
+     * 保存订单库
+     *
+     * @param payType
+     * @param requestParams
+     * @return
+     */
+    @Override
+    public JsonData handlerOrderCallbackMsg(String payType, Map<String, String> requestParams) {
+        if (ProductOrderPayTypeEnum.ALIPAY.name().equalsIgnoreCase(payType)) {
+            String outTradeNo = requestParams.get("out_trade_no");
+            String tradeStatus = requestParams.get("trade_status");
+
+            if ("TRADE_SUCCESS".equalsIgnoreCase(tradeStatus) || "TRADE_FINISH".equalsIgnoreCase(tradeStatus)) {
+                //更新订单状态
+                int i = productOrderMapper.updateOrderPayState(ProductOrderStateEnum.PAY.name(), ProductOrderStateEnum.NEW.name(), outTradeNo);
+                if (i == 1) {
+                    return JsonData.buildSuccess();
+                } else {
+                    return JsonData.buildResult(BizCodeEnum.PAY_ORDER_UPDATE_FAIL);
+                }
+            } else if (ProductOrderPayTypeEnum.ALIPAY.name().equalsIgnoreCase(payType)) {
+                ///TODO 微信支付
+            }
+
+        }
+        return JsonData.buildResult(BizCodeEnum.PAY_ORDER_CALLBACK_NOT_SUCCESS);
     }
 }
