@@ -49,7 +49,7 @@ public class CouponRecordController {
     }
 
     @ApiOperation("锁定优惠卷")
-    @GetMapping("/lock_coupon")
+    @PostMapping("/lock_coupon")
     public JsonData lockCoupon(@ApiParam("锁定优惠卷")
                                @RequestBody LockCouponRecordRequest lockCouponRecordRequest) {
         JsonData jsonData = recordService.lockCouponRecords(lockCouponRecordRequest);

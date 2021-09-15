@@ -72,7 +72,7 @@ mqconfig:
   #消息过期，进⼊释放死信队列的key
   order_close_routing_key: order.close.routing.key
   #消息过期时间,毫秒,测试改为15秒
-  ttl: 15000
+  ttl: 150000
 
 #支付宝配置
 alipay:
