@@ -2,6 +2,7 @@ package net.gaven.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.config.UserConfig;
 import net.gaven.constant.CacheKey;
 import net.gaven.enums.BizCodeEnum;
 import net.gaven.exception.BizException;
@@ -14,6 +15,7 @@ import net.gaven.vo.CartItemRequest;
 import net.gaven.vo.CartItemVO;
 import net.gaven.vo.CartVO;
 import net.gaven.vo.ProductVO;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,7 +41,8 @@ public class ICartItemsServiceImpl implements ICartService {
 
     @Autowired
     private IProductService productService;
-
+    @Autowired
+    UserConfig userConfig;
     /**
      * 添加购物车
      * 购物车的数据结构Map<String,Map<String,Object>>
@@ -134,7 +137,7 @@ public class ICartItemsServiceImpl implements ICartService {
         log.info("获取购物车开始...");
         //获取全部购物项
         List<CartItemVO> cartItemVOList = buildCartItem(false);
-
+        Map<String, String> userConfig = this.userConfig.getUserConfig();
         //封装成cartvo
         CartVO cartVO = new CartVO();
         cartVO.setCartItems(cartItemVOList);

@@ -74,3 +74,12 @@ mqconfig:
   stock_release_routing_key: stock.release.routing.key
   #消息过期时间,毫秒,测试改为15秒
   ttl: 300000
+
+user:
+  name: xx
+  age: 10
+
+contract:
+  name: xx
+  age: 10
+  time: uu
