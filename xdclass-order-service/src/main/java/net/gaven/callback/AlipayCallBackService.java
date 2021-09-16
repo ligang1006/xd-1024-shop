@@ -31,6 +31,7 @@ public class AlipayCallBackService {
         //调用SDK验证签名
         try {
             boolean rsaCertCheckV1 = AlipaySignature.rsaCertCheckV1(requestParams, AlipayConfig.ALIPAY_PUB_KEY, AlipayConfig.CHARSET, AlipayConfig.SIGN_TYPE);
+            log.info("check callback rsa params{}",  requestParams);
             if (rsaCertCheckV1) {
                 //处理回调数据
                 JsonData jsonData = orderService.handlerOrderCallbackMsg(ProductOrderPayTypeEnum.ALIPAY.name(), requestParams);

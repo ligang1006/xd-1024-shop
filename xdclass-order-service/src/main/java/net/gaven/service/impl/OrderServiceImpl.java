@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
+import net.gaven.component.PayFactory;
 import net.gaven.config.RabbitMqConfig;
 import net.gaven.enums.*;
 import net.gaven.exception.BizException;
@@ -24,10 +25,7 @@ import net.gaven.service.IOrderService;
 import net.gaven.util.CommonUtil;
 import net.gaven.util.JsonData;
 import net.gaven.util.RandomUtil;
-import net.gaven.vo.CouponRecordVO;
-import net.gaven.vo.OrderItemVO;
-import net.gaven.vo.ConfirmOrderRequest;
-import net.gaven.vo.ProductOrderAddressVO;
+import net.gaven.vo.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +88,8 @@ public class OrderServiceImpl implements IOrderService {
     private RabbitMqConfig rabbitMqConfig;
     @Autowired
     private ProductOrderItemMapper orderItemMapper;
-
+    @Autowired
+    private PayFactory payFactory;
     /**
      * 确认订单
      *
@@ -186,7 +185,7 @@ public class OrderServiceImpl implements IOrderService {
         //总价，未使用优惠券的价格
         productOrderDO.setTotalAmount(orderRequest.getTotalAmount());
         productOrderDO.setState(ProductOrderStateEnum.NEW.name());
-        ProductOrderTypeEnum.valueOf(orderRequest.getPayType()).name();
+//        ProductOrderTypeEnum.valueOf(orderRequest.getPayType()).name();
         productOrderDO.setPayType(ProductOrderPayTypeEnum.valueOf(orderRequest.getPayType()).name());
 
         productOrderDO.setReceiverAddress(JSON.toJSONString(addressVO));
@@ -214,7 +213,7 @@ public class OrderServiceImpl implements IOrderService {
         productRequest.setOrderOutTradeNo(orderOutTradeNo);
         productRequest.setOrderItemList(products);
         JsonData jsonData = productFeignService.lockProductStack(productRequest);
-        if (jsonData.getCode().equals(RequestStatusEnum.OK.getCode())) {
+        if (!jsonData.getCode().equals(RequestStatusEnum.OK.getCode())) {
             log.error("锁定商品库存失败：{}", productIdList);
             throw new BizException(BizCodeEnum.PRODUCT_LOCK_FAIL);
         }
@@ -242,35 +241,67 @@ public class OrderServiceImpl implements IOrderService {
      * * 1）统计全部商品的价格
      * * 2) 获取优惠券(判断是否满足优惠券的条件)，总价再减去优惠券的价格 就是 最终的价格
      *
-     * @param cartItemVOList
+     * @param orderItemList
      * @param orderRequest
      */
-    private void checkPrice(List<OrderItemVO> cartItemVOList, ConfirmOrderRequest orderRequest) {
+    private void checkPrice(List<OrderItemVO> orderItemList, ConfirmOrderRequest orderRequest) {
         //统计商品总价格
         BigDecimal realPayAmount = new BigDecimal("0");
-
-        Long couponRecordId = orderRequest.getCouponRecordId();
-        //获取优惠卷
-        CouponRecordVO cartCouponRecord = getCartCouponRecord(couponRecordId);
-        /*计算实际的价格，
-        Case1：使用优惠卷
-        Case2:没有使用优惠卷*/
-        for (OrderItemVO itemVO : cartItemVOList) {
-            realPayAmount.add(itemVO.getTotalAmount());
-        }
-        if (cartCouponRecord == null) {
-            //优惠卷>商品值
-        } else if (cartCouponRecord.getPrice().compareTo(realPayAmount) > 0) {
-            realPayAmount = BigDecimal.ZERO;
-        } else {
-            //商品-优惠卷价格
-            realPayAmount.divide(cartCouponRecord.getPrice());
+        if (orderItemList != null) {
+            for(OrderItemVO orderItemVO : orderItemList){
+                BigDecimal itemRealPayAmount = orderItemVO.getTotalAmount();
+                realPayAmount = realPayAmount.add(itemRealPayAmount);
+            }
         }
 
-        //把最新获取的价格-前端传的总价=0 ？：
-        if (orderRequest.getRealPayAmount().compareTo(realPayAmount) != 0) {
+        //获取优惠券，判断是否可以使用
+        CouponRecordVO couponRecordVO = getCartCouponRecord(orderRequest.getCouponRecordId());
+
+        //计算购物车价格，是否满足优惠券满减条件
+        if(couponRecordVO!=null){
+
+            //计算是否满足满减
+            if(realPayAmount.compareTo(couponRecordVO.getConditionPrice()) < 0){
+                throw new BizException(BizCodeEnum.ORDER_CONFIRM_COUPON_FAIL);
+            }
+            if(couponRecordVO.getPrice().compareTo(realPayAmount)>0){
+                realPayAmount = BigDecimal.ZERO;
+
+            }else {
+                realPayAmount = realPayAmount.subtract(couponRecordVO.getPrice());
+            }
+
+        }
+
+        if(realPayAmount.compareTo(orderRequest.getRealPayAmount()) !=0 ){
+            log.error("订单验价失败：{}",orderRequest);
             throw new BizException(BizCodeEnum.ORDER_CONFIRM_PRICE_FAIL);
         }
+//        //统计商品总价格
+//        BigDecimal realPayAmount = new BigDecimal("0");
+//
+//        Long couponRecordId = orderRequest.getCouponRecordId();
+//        //获取优惠卷
+//        CouponRecordVO cartCouponRecord = getCartCouponRecord(couponRecordId);
+//        /*计算实际的价格，
+//        Case1：使用优惠卷
+//        Case2:没有使用优惠卷*/
+//        for (OrderItemVO itemVO : cartItemVOList) {
+//            realPayAmount.add(itemVO.getTotalAmount());
+//        }
+//        if (cartCouponRecord == null) {
+//            //优惠卷>商品值
+//        } else if (cartCouponRecord.getPrice().compareTo(realPayAmount) > 0) {
+//            realPayAmount = BigDecimal.ZERO;
+//        } else {
+//            //商品-优惠卷价格
+//            realPayAmount.divide(cartCouponRecord.getPrice());
+//        }
+//
+//        //把最新获取的价格-前端传的总价=0 ？：
+//        if (orderRequest.getRealPayAmount().compareTo(realPayAmount) != 0) {
+//            throw new BizException(BizCodeEnum.ORDER_CONFIRM_PRICE_FAIL);
+//        }
     }
 
     private CouponRecordVO getCartCouponRecord(Long couponRecordId) {
@@ -371,10 +402,13 @@ public class OrderServiceImpl implements IOrderService {
         }
 
 
-        //向第三方支付查询订单是否真的未支付  TODO
+        //向第三方支付查询订单是否真的未支付
+        //向第三方支付查询订单是否真的未支付
+        PayInfoVO payInfoVO = new PayInfoVO();
+        payInfoVO.setPayType(productOrderDO.getPayType());
+        payInfoVO.setOutTradeNo(orderMessage.getOutTradeNo());
+        String payResult = payFactory.queryPaySuccess(payInfoVO);
 
-
-        String payResult = "";
         //支付，return true 关单 修改订单状态
         // 未支付，到第三方查询订单状态
         //第三方 未支付--->true

@@ -40,7 +40,7 @@ public class PayFactory {
      * @param payInfoVO
      * @return
      */
-    public String queryPay(PayInfoVO payInfoVO) {
+    public String queryPaySuccess(PayInfoVO payInfoVO) {
         if (ProductOrderPayTypeEnum.ALIPAY.name().equalsIgnoreCase(payInfoVO.getPayType())) {
             //支付宝支付
             PayStrategyContext payStrategyContext = new PayStrategyContext(alipayStrategy);
