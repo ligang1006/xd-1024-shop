@@ -83,3 +83,5 @@ contract:
   name: xx
   age: 10
   time: uu
+  userAddress: 北京
+  userDetailInfo: 测试

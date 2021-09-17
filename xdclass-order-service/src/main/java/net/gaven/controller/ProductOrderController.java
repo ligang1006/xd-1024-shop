@@ -44,11 +44,11 @@ public class ProductOrderController {
 
     @ApiOperation("提交订单")
     @PostMapping("/confirm")
-    public void confirmOrder(@ApiParam("订单对象")
-                             @RequestBody ConfirmOrderRequest orderRequest,
-                             HttpServletResponse httpServletResponse) {
+    public JsonData confirmOrder(@ApiParam("订单对象")
+                                 @RequestBody ConfirmOrderRequest orderRequest,
+                                 HttpServletResponse httpServletResponse) {
         JsonData jsonData = orderService.confirmOrder(orderRequest);
-
+        return jsonData;
     }
 
     /**
@@ -69,17 +69,18 @@ public class ProductOrderController {
         return StringUtils.isBlank(state) ? JsonData.buildResult(BizCodeEnum.ORDER_CONFIRM_NOT_EXIST) : JsonData.buildSuccess(state);
 
     }
+
     /**
      * 测试支付方法
      */
     @GetMapping("/test_pay")
     public void testAlipay(HttpServletResponse response) throws AlipayApiException, IOException {
 
-        HashMap<String,String> content = new HashMap<>();
+        HashMap<String, String> content = new HashMap<>();
         //商户订单号,64个字符以内、可包含字母、数字、下划线；需保证在商户端不重复
         String no = UUID.randomUUID().toString();
 
-        log.info("订单号:{}",no);
+        log.info("订单号:{}", no);
         content.put("out_trade_no", no);
 
         content.put("product_code", "FAST_INSTANT_TRADE_PAY");
@@ -102,9 +103,9 @@ public class ProductOrderController {
         request.setNotifyUrl(payUrlConfig.getAlipayCallbackUrl());
         request.setReturnUrl(payUrlConfig.getAlipaySuccessReturnUrl());
 
-        AlipayTradeWapPayResponse alipayResponse  = AlipayConfig.getInstance().pageExecute(request);
+        AlipayTradeWapPayResponse alipayResponse = AlipayConfig.getInstance().pageExecute(request);
 
-        if(alipayResponse.isSuccess()){
+        if (alipayResponse.isSuccess()) {
             System.out.println("调用成功");
 
             String form = alipayResponse.getBody();

@@ -6,6 +6,7 @@ import com.alibaba.fastjson.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.component.PayFactory;
 import net.gaven.config.RabbitMqConfig;
+import net.gaven.constant.TimeConstant;
 import net.gaven.enums.*;
 import net.gaven.exception.BizException;
 import net.gaven.feign.CouponFeignService;
@@ -90,6 +91,7 @@ public class OrderServiceImpl implements IOrderService {
     private ProductOrderItemMapper orderItemMapper;
     @Autowired
     private PayFactory payFactory;
+
     /**
      * 确认订单
      *
@@ -135,9 +137,24 @@ public class OrderServiceImpl implements IOrderService {
         //定时关单
         sendOrderMessage(orderOutTradeNo);
         //支付
+        //创建支付
+        return createPay(orderOutTradeNo, productOrderDO, orderRequest, cartItemVOList);
 
+    }
 
-        return null;
+    private JsonData createPay(String orderOutTradeNo, ProductOrderDO productOrderDO, ConfirmOrderRequest orderRequest, List<OrderItemVO> cartItemVOList) {
+        PayInfoVO payInfoVO = new PayInfoVO(orderOutTradeNo,
+                productOrderDO.getPayAmount(), orderRequest.getPayType(),
+                orderRequest.getClientType(), cartItemVOList.get(0).getProductTitle(), "", TimeConstant.ORDER_PAY_TIMEOUT_MILLS);
+
+        String payResult = payFactory.pay(payInfoVO);
+        if (StringUtils.isNotBlank(payResult)) {
+            log.info("创建支付订单成功:payInfoVO={},payResult={}", payInfoVO, payResult);
+            return JsonData.buildSuccess(payResult);
+        } else {
+            log.error("创建支付订单失败:payInfoVO={},payResult={}", payInfoVO, payResult);
+            return JsonData.buildResult(BizCodeEnum.PAY_ORDER_FAIL);
+        }
     }
 
     private void saveProductOrderItems(String orderOutTradeNo, Long orderId, List<OrderItemVO> orderItemList) {
@@ -248,7 +265,7 @@ public class OrderServiceImpl implements IOrderService {
         //统计商品总价格
         BigDecimal realPayAmount = new BigDecimal("0");
         if (orderItemList != null) {
-            for(OrderItemVO orderItemVO : orderItemList){
+            for (OrderItemVO orderItemVO : orderItemList) {
                 BigDecimal itemRealPayAmount = orderItemVO.getTotalAmount();
                 realPayAmount = realPayAmount.add(itemRealPayAmount);
             }
@@ -258,23 +275,23 @@ public class OrderServiceImpl implements IOrderService {
         CouponRecordVO couponRecordVO = getCartCouponRecord(orderRequest.getCouponRecordId());
 
         //计算购物车价格，是否满足优惠券满减条件
-        if(couponRecordVO!=null){
+        if (couponRecordVO != null) {
 
             //计算是否满足满减
-            if(realPayAmount.compareTo(couponRecordVO.getConditionPrice()) < 0){
+            if (realPayAmount.compareTo(couponRecordVO.getConditionPrice()) < 0) {
                 throw new BizException(BizCodeEnum.ORDER_CONFIRM_COUPON_FAIL);
             }
-            if(couponRecordVO.getPrice().compareTo(realPayAmount)>0){
+            if (couponRecordVO.getPrice().compareTo(realPayAmount) > 0) {
                 realPayAmount = BigDecimal.ZERO;
 
-            }else {
+            } else {
                 realPayAmount = realPayAmount.subtract(couponRecordVO.getPrice());
             }
 
         }
 
-        if(realPayAmount.compareTo(orderRequest.getRealPayAmount()) !=0 ){
-            log.error("订单验价失败：{}",orderRequest);
+        if (realPayAmount.compareTo(orderRequest.getRealPayAmount()) != 0) {
+            log.error("订单验价失败：{}", orderRequest);
             throw new BizException(BizCodeEnum.ORDER_CONFIRM_PRICE_FAIL);
         }
 //        //统计商品总价格

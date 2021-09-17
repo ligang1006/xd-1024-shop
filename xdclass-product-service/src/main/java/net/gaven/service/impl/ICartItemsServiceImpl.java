@@ -10,6 +10,7 @@ import net.gaven.interceptor.LoginInterceptor;
 import net.gaven.model.LoginUser;
 import net.gaven.service.ICartService;
 import net.gaven.service.IProductService;
+import net.gaven.service.User;
 import net.gaven.util.JsonData;
 import net.gaven.vo.CartItemRequest;
 import net.gaven.vo.CartItemVO;
@@ -23,11 +24,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author: lee
@@ -41,8 +44,9 @@ public class ICartItemsServiceImpl implements ICartService {
 
     @Autowired
     private IProductService productService;
-    @Autowired
-    UserConfig userConfig;
+//    @Autowired
+//    UserConfig userConfig;
+
     /**
      * 添加购物车
      * 购物车的数据结构Map<String,Map<String,Object>>
@@ -136,8 +140,52 @@ public class ICartItemsServiceImpl implements ICartService {
         //获取购物车
         log.info("获取购物车开始...");
         //获取全部购物项
+        User user = new User();
+        user.setAge(2);
+        user.setName("小明");
+        user.setUserAddress("bj");
+        user.setUserDetailInfo("ssss");
+
         List<CartItemVO> cartItemVOList = buildCartItem(false);
-        Map<String, String> userConfig = this.userConfig.getUserConfig();
+//        Map<String, String> userConfig = this.userConfig.getUserConfig();
+//        Class<? extends User> clazz = user.getClass();
+//        Field[] declaredFields = clazz.getDeclaredFields();
+//        for (int i = 0; i < declaredFields.length; i++) {
+//            Field field = declaredFields[i];
+//            field.setAccessible(true);
+//            String configValue = userConfig.get(field.getName());
+//            if (org.apache.commons.lang3.StringUtils.isNotEmpty(configValue)) {
+//                try {
+//                    //得到此属性的类型
+//                    String type = field.getType().toString();
+//                    if (type.endsWith("String")) {
+//                        //给属性设值
+//                        field.set(user, configValue);
+//                    } else if (type.endsWith("int") || type.endsWith("Integer")) {
+//                        //给属性设值
+//                        field.set(user, Integer.valueOf(configValue));
+//                    } else {
+//                        System.out.println(field.getType() + "\t");
+//                    }
+////                    field.set(user, configValue);
+//                } catch (IllegalAccessException e) {
+//                    log.error("set providerConfig fail by reflect{}", e);
+//                }
+//            }
+//        }
+//        Stream.of(clazz.getFields()).forEach(field -> {
+//            field.setAccessible(true);
+//            String configValue = userConfig.get(field.getName());
+//            if (org.apache.commons.lang3.StringUtils.isNotEmpty(configValue)) {
+//                try {
+//                    field.set(user, configValue);
+//                } catch (IllegalAccessException e) {
+//                    log.error("set providerConfig fail by reflect{}", e);
+//                }
+//            }
+//        });
+
+
         //封装成cartvo
         CartVO cartVO = new CartVO();
         cartVO.setCartItems(cartItemVOList);
