@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -162,5 +163,23 @@ public class ProductOrderController {
         }
     }
 
+    /**
+     * 分页查询我的订单列表
+     *
+     * @param page
+     * @param size
+     * @param state
+     * @return
+     */
+    @ApiOperation("分页查询我的订单列表")
+    @GetMapping("page")
+    public JsonData pagePOrderList(
+            @ApiParam(value = "当前页") @RequestParam(value = "page", defaultValue = "1") int page,
+            @ApiParam(value = "每页显示多少条") @RequestParam(value = "size", defaultValue = "10") int size,
+            @ApiParam(value = "订单状态") @RequestParam(value = "state", required = false) String state) {
+
+        Map<String, Object> pageResult = orderService.page(page, size, state);
+        return JsonData.buildSuccess(pageResult);
+    }
 }
 

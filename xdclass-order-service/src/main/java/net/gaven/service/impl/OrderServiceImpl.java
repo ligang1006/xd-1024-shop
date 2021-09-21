@@ -3,6 +3,9 @@ package net.gaven.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.alibaba.fastjson.TypeReference;
+
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.component.PayFactory;
 import net.gaven.config.RabbitMqConfig;
@@ -29,15 +32,14 @@ import net.gaven.util.RandomUtil;
 import net.gaven.vo.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -472,5 +474,47 @@ public class OrderServiceImpl implements IOrderService {
 
         }
         return JsonData.buildResult(BizCodeEnum.PAY_ORDER_CALLBACK_NOT_SUCCESS);
+    }
+
+    @Override
+    public Map<String, Object> page(int page, int size, String state) {
+        LoginUser loginUser = LoginInterceptor.threadLocal.get();
+
+        Page<ProductOrderDO> pageInfo = new Page<>(page, size);
+        IPage<ProductOrderDO> orderDOPage = null;
+        if (StringUtils.isBlank(state)) {
+            orderDOPage = productOrderMapper
+                    .selectPage(pageInfo, new QueryWrapper<ProductOrderDO>()
+                            .eq("user_id", loginUser.getId()));
+        } else {
+            orderDOPage = productOrderMapper
+                    .selectPage(pageInfo, new QueryWrapper<ProductOrderDO>()
+                            .eq("user_id", loginUser.getId())
+                            .eq("state", state));
+        }
+        //获取订单列表
+        List<ProductOrderDO> orderList = orderDOPage.getRecords();if (CollectionUtils.isEmpty(orderList)){return null;}
+        List<ProductOrderVO> productOrderVOSList = orderList.stream().map(order -> {
+            List<ProductOrderItemDO> productOrderItemDOS = orderItemMapper.selectList(new QueryWrapper<ProductOrderItemDO>()
+                    .eq("product_order_id", order.getId()));
+            List<OrderItemVO> itemVOS = productOrderItemDOS.stream().map(itemDos -> {
+                OrderItemVO orderItemVO = new OrderItemVO();
+                orderItemVO.setProductId(itemDos.getProductId());
+                orderItemVO.setAmount(order.getTotalAmount());
+                orderItemVO.setProductImg(itemDos.getProductImg());
+                orderItemVO.setBuyNum(itemDos.getBuyNum());
+                orderItemVO.setProductTitle(itemDos.getProductName());
+                return orderItemVO;
+            }).collect(Collectors.toList());
+            ProductOrderVO productOrderVO = new ProductOrderVO();
+            BeanUtils.copyProperties(order, productOrderVO);
+            productOrderVO.setOrderItemList(itemVOS);
+            return productOrderVO;
+        }).collect(Collectors.toList());
+        Map<String, Object> pageMap = new HashMap<>(1 << 2);
+        pageMap.put("total_record", orderDOPage.getTotal());
+        pageMap.put("total_page", orderDOPage.getPages());
+        pageMap.put("current_data", productOrderVOSList);
+        return pageMap;
     }
 }

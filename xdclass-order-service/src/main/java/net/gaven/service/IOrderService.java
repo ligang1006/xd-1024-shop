@@ -42,4 +42,14 @@ public interface IOrderService {
      * @return
      */
     JsonData handlerOrderCallbackMsg(String payType, Map<String, String> requestParams);
+
+    /**
+     * 获取订单列表
+     *
+     * @param page
+     * @param size
+     * @param state
+     * @return
+     */
+    Map<String, Object> page(int page, int size, String state);
 }
