@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.component.PayFactory;
 import net.gaven.config.RabbitMqConfig;
+import net.gaven.constant.CacheKey;
 import net.gaven.constant.TimeConstant;
 import net.gaven.enums.*;
 import net.gaven.exception.BizException;
@@ -34,6 +35,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -93,6 +96,8 @@ public class OrderServiceImpl implements IOrderService {
     private ProductOrderItemMapper orderItemMapper;
     @Autowired
     private PayFactory payFactory;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     /**
      * 确认订单
@@ -104,6 +109,7 @@ public class OrderServiceImpl implements IOrderService {
     public JsonData confirmOrder(ConfirmOrderRequest orderRequest) {
         //获取用户
         LoginUser loginUser = LoginInterceptor.threadLocal.get();
+        checkToken(orderRequest.getToken(), loginUser.getId());
         //订单号
         String orderOutTradeNo = RandomUtil.getRandomString();
         List<OrderItemVO> cartItemVOList = null;
@@ -142,6 +148,20 @@ public class OrderServiceImpl implements IOrderService {
         //创建支付
         return createPay(orderOutTradeNo, productOrderDO, orderRequest, cartItemVOList);
 
+    }
+
+    private void checkToken(String token, Long userId) {
+        if (StringUtils.isBlank(token)) {
+            throw new BizException(BizCodeEnum.ORDER_CONFIRM_TOKEN_NOT_EXIST);
+        }
+        //原子操作 校验令牌，删除令牌
+        String script = "if redis.call('get',KEYS[1]) == ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end";
+
+        Long result = redisTemplate.execute(new DefaultRedisScript<>(script, Long.class),
+                Arrays.asList(String.format(CacheKey.SUBMIT_ORDER_TOKEN_KEY, userId)), token);
+        if (result == 0L) {
+            throw new BizException(BizCodeEnum.ORDER_CONFIRM_TOKEN_EQUAL_FAIL);
+        }
     }
 
     private JsonData createPay(String orderOutTradeNo, ProductOrderDO productOrderDO, ConfirmOrderRequest orderRequest, List<OrderItemVO> cartItemVOList) {
@@ -493,7 +513,10 @@ public class OrderServiceImpl implements IOrderService {
                             .eq("state", state));
         }
         //获取订单列表
-        List<ProductOrderDO> orderList = orderDOPage.getRecords();if (CollectionUtils.isEmpty(orderList)){return null;}
+        List<ProductOrderDO> orderList = orderDOPage.getRecords();
+        if (CollectionUtils.isEmpty(orderList)) {
+            return null;
+        }
         List<ProductOrderVO> productOrderVOSList = orderList.stream().map(order -> {
             List<ProductOrderItemDO> productOrderItemDOS = orderItemMapper.selectList(new QueryWrapper<ProductOrderItemDO>()
                     .eq("product_order_id", order.getId()));

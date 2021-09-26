@@ -13,4 +13,8 @@ public class CacheKey {
      * 购物车
      */
     public static final String CART_KEY = "cart:%s";
+    /**
+     * 订单token
+     */
+    public static final String SUBMIT_ORDER_TOKEN_KEY="order:submit:token:%s";
 }
