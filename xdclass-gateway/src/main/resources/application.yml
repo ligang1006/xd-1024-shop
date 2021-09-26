@@ -1,5 +1,5 @@
 server:
-  port: 9004
+  port: 8889
 
 spring:
   application:
@@ -13,11 +13,43 @@ spring:
         - id:  product-service
           uri: lb://xdclass-product-service #从nacos进行转发
           order: 1 #优先级，越小越高
-
           predicates: #断言 配置哪个路径才进行转发，前端访问路径统一加上xxx-server，网关判断对应的服务，如果是回调业务记得修改
             - Path=/product-server/**
           filters: #过滤器，请求在传递过程中通过过滤器修改
+            - StripPrefix=1 #去掉第⼀层前缀，转发给后续的路径  去掉前缀/product-server
+
+        - id:  user-service
+          uri: lb://xdclass-user-service #从nacos进行转发
+          order: 2 #优先级，越小越高
+          predicates: #断言 配置哪个路径才进行转发，前端访问路径统一加上xxx-server，网关判断对应的服务，如果是回调业务记得修改
+            - Path=/user-server/**
+          filters: #过滤器，请求在传递过程中通过过滤器修改
             - StripPrefix=1 #去掉第⼀层前缀，转发给后续的路径
+
+        - id:  coupon-service
+          uri: lb://xdclass-coupon-service #从nacos进行转发
+          order: 3 #优先级，越小越高
+          predicates: #断言 配置哪个路径才进行转发，前端访问路径统一加上xxx-server，网关判断对应的服务，如果是回调业务记得修改
+            - Path=/coupon-server/**
+          filters: #过滤器，请求在传递过程中通过过滤器修改
+            - StripPrefix=1 #去掉第⼀层前缀，转发给后续的路径
+
+        - id:  order-service
+          uri: lb://xdclass-order-service #从nacos进行转发
+          order: 3 #优先级，越小越高
+          predicates: #断言 配置哪个路径才进行转发，前端访问路径统一加上xxx-server，网关判断对应的服务，如果是回调业务记得修改
+            - Path=/order-server/**
+          filters: #过滤器，请求在传递过程中通过过滤器修改
+            - StripPrefix=1 #去掉第⼀层前缀，转发给后续的路径
+      #开启网关拉取nacos的服务
+      discovery:
+        locator:
+          enabled: true
+
+
+
+
+
 #配置plus打印sql日志
 mybatis-plus:
   configuration:
