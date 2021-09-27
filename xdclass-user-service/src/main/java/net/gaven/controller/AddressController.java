@@ -37,6 +37,9 @@ public class AddressController {
     public JsonData getAddressById(@ApiParam(value = "地址Id", required = true)
                                    @PathVariable("address_id") Integer addressId) {
         AddressDO addressDO = addressService.getAddressById(addressId);
+        if (addressDO==null){
+            return JsonData.buildSuccess();
+        }
         if (addressDO.getId() == 1) {
             throw new BizException(BizCodeEnum.OPS_REPEAT.getCode(), "数据重复");
 

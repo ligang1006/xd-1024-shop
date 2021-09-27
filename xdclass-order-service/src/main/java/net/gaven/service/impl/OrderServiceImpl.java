@@ -109,7 +109,7 @@ public class OrderServiceImpl implements IOrderService {
     public JsonData confirmOrder(ConfirmOrderRequest orderRequest) {
         //获取用户
         LoginUser loginUser = LoginInterceptor.threadLocal.get();
-        checkToken(orderRequest.getToken(), loginUser.getId());
+//        checkToken(orderRequest.getToken(), loginUser.getId());
         //订单号
         String orderOutTradeNo = RandomUtil.getRandomString();
         List<OrderItemVO> cartItemVOList = null;
