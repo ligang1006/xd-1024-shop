@@ -109,11 +109,11 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
-<!--        &lt;!&ndash;alibaba微服务整合分布式事务，上⾯的⽅式不⾏ mvn包冲突&ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.alibaba.cloud</groupId>-->
-<!--            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>-->
-<!--        </dependency>-->
+        <!--        &lt;!&ndash;alibaba微服务整合分布式事务，上⾯的⽅式不⾏ mvn包冲突&ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.alibaba.cloud</groupId>-->
+        <!--            <artifactId>spring-cloud-starter-alibaba-seata</artifactId>-->
+        <!--        </dependency>-->
         <!--引⼊AMQP-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -122,6 +122,11 @@
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+        <!--sentinel限流-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
         </dependency>
 
     </dependencies>

@@ -195,3 +195,9 @@ springfox.documentation.service.response
   方法2：两次支付都请求第三方，只是超时时间进行改变
 
   ![img_12.png](img_12.png)
+
+sentinel
+
+![img_13.png](img_13.png)
+网关和各个微服务也需要限流操作，一般情况是在网关不进行限流，只在各个服务进行限流操作
+网关的服务相对较强大
