@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: xdclass-coupon-service
+  cloud:
+    nacos:
+      config:
+        server-addr: 123.57.32.9:8848 #Nacos配置中心地址
+        file-extension: yaml #文件拓展格式
+
+
+  profiles:
+    active: dev
+
+#nacos的配置   规则dataId xdclass-coupon-service-dev.yaml 服务名-profile.拓展名
+
+#校验方法  http://127.0.0.1:8848/nacos/v1/cs/configs?dataId=xdclass-coupon-service-dev.yaml&group=DEFAULT_GROUP

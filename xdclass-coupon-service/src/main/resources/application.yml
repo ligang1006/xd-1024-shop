@@ -1,91 +1,91 @@
-server:
-  port: 9002
-
-spring:
-  application:
-    name: xdclass-coupon-service
-  #服务发现
-  cloud:
-    nacos:
-      discovery:
-        server-addr: 123.57.32.9:8848
-  #消息队列
-  rabbitmq:
-    host: 123.57.32.9
-    port: 5672
-    virtual-host: /
-    password: password
-    username: admin
-  #开启⼿动确认消息
-    listener:
-      simple:
-        acknowledge-mode: manual
-
-  redis:
-    host: 123.57.32.9
-    password: 123456
-    port: 8001
-    #邮箱服务配置
-  mail:
-    host: smtp.163.com #发送邮件服务器
-    username: ligang997x@163.com #发送邮件的邮箱地址
-    password: SUDLFLYXWCPRSHVO #客户端授权码，不是邮箱密码,网易的是自己设置的
-    from: ligang997x@163.com # 发送邮件的地址，和上面username一致
-
-    properties.mail.smtp.starttls.enable: true
-    properties.mail.smtp.starttls.required: true
-    properties.mail.smtp.ssl.enable: true
-    default-encoding: utf-8
-  #数据库配置
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/xdclass_coupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
-    username: root
-    password: root
-
-#配置plus打印sql日志
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
-#设置日志级别,ERROR/WARN/INFO/DEBUG,默认是INFO以上才显示
-logging:
-  level:
-    root: INFO
-
-#阿里云OSS配置
-aliyun:
-  oss:
-    endpoint: oss-cn-beijing.aliyuncs.com
-    access-key-id: LTAI5tFZxPyz7mbq4oRCbbmH
-    access-key-secret: Wa3rWKyJBezZdmkz44kCagWQyFXAxU
-    bucketname: lee-beijing-oss
-
-##seata配置
-#seata:
-##  分组
-#  tx-service-group: ${spring.application.name}-group
-#  service:
-## seata地址，xdclass xdclass-user-service-group必须相同
-#    grouplist:
-#      xdclass: 127.0.0.1:8091
-#    vgroup-mapping:
-##与上面的tx-service-group名一致
-#      xdclass-coupon-service-group: xdclass
-
-#⾃定义消息队列配置，发送锁定库存消息-》延迟
-#  exchange-》lock.queue-》死信exchange-》
-#  release.queue
-mqconfig:
-  #延迟队列，不能被监听消费
-  coupon_release_delay_queue: coupon.release.delay.queue
-  #延迟队列的消息过期后转发的队列
-  coupon_release_queue: coupon.release.queue
-#交换机
-  coupon_event_exchange: coupon.event.exchange
-#进⼊延迟队列的路由key
-  coupon_release_delay_routing_key: coupon.release.delay.routing.key
-#消息过期，进⼊释放死信队列的key
-  coupon_release_routing_key: coupon.release.routing.key
-#消息过期时间,毫秒,测试改为15秒
-  ttl: 300000
+#server:
+#  port: 9002
+#
+#spring:
+#  application:
+#    name: xdclass-coupon-service
+#  #服务发现
+#  cloud:
+#    nacos:
+#      discovery:
+#        server-addr: 123.57.32.9:8848
+#  #消息队列
+#  rabbitmq:
+#    host: 123.57.32.9
+#    port: 5672
+#    virtual-host: /
+#    password: password
+#    username: admin
+#  #开启⼿动确认消息
+#    listener:
+#      simple:
+#        acknowledge-mode: manual
+#
+#  redis:
+#    host: 123.57.32.9
+#    password: 123456
+#    port: 8001
+#    #邮箱服务配置
+#  mail:
+#    host: smtp.163.com #发送邮件服务器
+#    username: ligang997x@163.com #发送邮件的邮箱地址
+#    password: SUDLFLYXWCPRSHVO #客户端授权码，不是邮箱密码,网易的是自己设置的
+#    from: ligang997x@163.com # 发送邮件的地址，和上面username一致
+#
+#    properties.mail.smtp.starttls.enable: true
+#    properties.mail.smtp.starttls.required: true
+#    properties.mail.smtp.ssl.enable: true
+#    default-encoding: utf-8
+#  #数据库配置
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://127.0.0.1:3306/xdclass_coupon?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+#    username: root
+#    password: root
+#
+##配置plus打印sql日志
+#mybatis-plus:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#
+##设置日志级别,ERROR/WARN/INFO/DEBUG,默认是INFO以上才显示
+#logging:
+#  level:
+#    root: INFO
+#
+##阿里云OSS配置
+#aliyun:
+#  oss:
+#    endpoint: oss-cn-beijing.aliyuncs.com
+#    access-key-id: LTAI5tFZxPyz7mbq4oRCbbmH
+#    access-key-secret: Wa3rWKyJBezZdmkz44kCagWQyFXAxU
+#    bucketname: lee-beijing-oss
+#
+###seata配置
+##seata:
+###  分组
+##  tx-service-group: ${spring.application.name}-group
+##  service:
+### seata地址，xdclass xdclass-user-service-group必须相同
+##    grouplist:
+##      xdclass: 127.0.0.1:8091
+##    vgroup-mapping:
+###与上面的tx-service-group名一致
+##      xdclass-coupon-service-group: xdclass
+#
+##⾃定义消息队列配置，发送锁定库存消息-》延迟
+##  exchange-》lock.queue-》死信exchange-》
+##  release.queue
+#mqconfig:
+#  #延迟队列，不能被监听消费
+#  coupon_release_delay_queue: coupon.release.delay.queue
+#  #延迟队列的消息过期后转发的队列
+#  coupon_release_queue: coupon.release.queue
+##交换机
+#  coupon_event_exchange: coupon.event.exchange
+##进⼊延迟队列的路由key
+#  coupon_release_delay_routing_key: coupon.release.delay.routing.key
+##消息过期，进⼊释放死信队列的key
+#  coupon_release_routing_key: coupon.release.routing.key
+##消息过期时间,毫秒,测试改为15秒
+#  ttl: 300000
