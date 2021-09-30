@@ -9,6 +9,11 @@
 #    nacos:
 #      discovery:
 #        server-addr: 123.57.32.9:8848
+#    sentinel:
+#      transport:
+#        dashboard: 123.57.32.9:8858
+#        port: 9999
+#        client-ip: 123.57.32.9
 #  #消息队列
 #  rabbitmq:
 #    host: 123.57.32.9

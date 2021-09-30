@@ -201,3 +201,28 @@ sentinel
 ![img_13.png](img_13.png)
 网关和各个微服务也需要限流操作，一般情况是在网关不进行限流，只在各个服务进行限流操作
 网关的服务相对较强大
+
+配置方法
+* 依赖
+```
+<dependency>
+<groupId>com.alibaba.cloud</groupId>
+<artifactId>spring-cloud-starter-alibaba-sentinel</artifactId>
+</dependency>
+```
+* 配置
+```
+spring:
+ cloud:
+ sentinel:
+ transport:
+ dashboard: 192.168.0.88:8858
+ port: 9999
+#dashboard: 8858 控制台端⼝
+#port: 9999 本地启的端⼝，随机选个不能被占⽤的，与
+dashboard进⾏数据交互，会在应⽤对应的机器上启动⼀个
+Http Server，该 Server 会与 Sentinel 控制台做交互,
+若被占⽤,则开始+1⼀次扫描
+```
+
+微服务注册上去后，由于Sentinel是懒加载模式，所以需要访问微服务后才会在控制台出现
