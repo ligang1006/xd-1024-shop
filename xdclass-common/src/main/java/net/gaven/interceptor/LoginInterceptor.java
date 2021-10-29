@@ -1,5 +1,6 @@
 package net.gaven.interceptor;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import net.gaven.enums.BizCodeEnum;
@@ -83,6 +84,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-
+        //TODO 这里在请求完成之后,其他链路如果不需要的话 要remove
+        threadLocal.remove();
     }
 }
